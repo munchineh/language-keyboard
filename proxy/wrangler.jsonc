@@ -1,0 +1,10 @@
+{
+  // Must match the Worker name in Cloudflare so Git deploys update it.
+  "name": "keyboard-proxy",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  // No request logging: the proxy handles private messages.
+  "observability": { "enabled": false }
+  // Secrets (ANTHROPIC_API_KEY, GEMINI_API_KEY, APP_TOKEN) live only in the
+  // Cloudflare dashboard and are never committed.
+}
