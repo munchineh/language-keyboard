@@ -65,6 +65,17 @@
                ReferencedContainer = "container:LanguageKeyboard.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "EF2D913A107BCE2277087A79"
+               BuildableName = "KeyboardSnapshots.xctest"
+               BlueprintName = "KeyboardSnapshots"
+               ReferencedContainer = "container:LanguageKeyboard.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>
