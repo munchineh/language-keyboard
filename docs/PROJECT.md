@@ -1,7 +1,7 @@
 # Language Keyboard: project doc
 
 > Living document. Paste or attach this at the start of any new chat about the keyboard.
-> Last updated: 2026-11-11 · Owner: Mancini · Status: proxy v3 deployed from GitHub (Claude + Gemini); next: 5-model blind test
+> Last updated: 2026-11-11 · Owner: Mancini · Status: proxy v3 live (Claude + Gemini); 5-model blind test ready to judge
 
 ## How to use this doc (for Claude in future chats)
 
@@ -107,7 +107,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | `APP_TOKEN` | Same place, plus Mancini's password manager ("keyboard-proxy token"). **Rotate before daily use** (an earlier one appeared in a screenshot) |
 | Claude API credits | Claude Console org (Individual), linked via claude.ai (web only) › Settings › Billing › API credits |
 | Worker code | `proxy/worker.js` (v3) + `proxy/wrangler.jsonc` in the repo |
-| Blind test | `blind_test.py` + `sentences.json` (36 starter sentences) |
+| Blind test | v3 run complete: 36 sentences × 5 models, 0 errors. Judging page: [Keyboard blind test](https://claude.ai/artifact/4AKy3ivDKKEW1PvRASiYMH) (pick the best answer per sentence, then Reveal). Model time: haiku avg 1.10s (median 1.03s) · haiku_think 2.03s (1.80s) · sonnet 1.64s (1.49s) · gemini_lite 1.36s (0.79s, p90 2.7s) · gemini_flash 4.14s (3.61s). Waiting on Mancini's picks |
 
 ---
 
@@ -201,13 +201,15 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 
 | Date | Issue | Status |
 |---|---|---|
-| 2026-11-11 | Sonnet 5.5 returned 400 on every check. Most likely cause: Sonnet 5.5 can't turn thinking off, and v1 forced a tool call. Not confirmed because v1 hid the error message | Fixed in v2/v3 (auto tool choice, low effort, extra tokens, error details shown). Confirm on re-run |
+| 2026-11-11 | Sonnet 5.5 returned 400 on every check. Most likely cause: Sonnet 5.5 can't turn thinking off, and v1 forced a tool call. Not confirmed because v1 hid the error message | Fixed in v3: Sonnet ran 36/36 without errors |
 | 2026-11-11 | Proxy errors hid Anthropic's error message, slowing diagnosis | Fixed in v2 (returns error type and message, never user text) |
 | 2026-11-11 | APP_TOKEN visible in a Terminal screenshot | Rotate before daily use |
 | 2026-11-11 | Requests from Seoul served by Cloudflare SEA/LAX | Accepted: Anthropic API is US-hosted, so the Pacific hop happens anyway |
 | 2026-11-11 | Haiku returned "fix" with unchanged text 3 times (one tip said "placeholder") | Fixed in v3 (guard) |
 | 2026-11-11 | Haiku put style changes into "fix" (그런데 그것은 → 그거 진짜) and "fixed" natural texting (집 가는 중 → 가는 중이야) | v3 prompt tightened; confirm on re-run |
 | 2026-11-11 | Prompt now includes general rules for address terms by gender and texting shortcuts. Same prompt for every model, so the comparison stays fair, but some test sentences overlap these rules | Note when reading results; add fresh real messages to the test set |
+| 2026-11-11 | Smoke test: haiku_think passed 안 했어서 as ok, while haiku (thinking off), sonnet and both Geminis caught it | Watch in blind-test results |
+| 2026-11-11 | gemini_flash (3.8 Flash) averages 4.1s; LOW is its lowest thinking level | Likely too slow for the pause check regardless of quality |
 | 2026-11-11 | Haiku missed: 안 했어서, 언니 from a male speaker, 왜냐하면 structure, 오에스티 → OST | Open: compare Sonnet and Haiku with thinking on |
 
 ---
@@ -221,3 +223,4 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Proxy v1 live; Korean check verified (선생님한테 줬어 → 선생님께 드렸어); latency measured |
 | 2026-11-11 | Blind test built (36 sentences); Haiku run complete; Sonnet bug found; proxy v2 written; this doc created |
 | 2026-11-11 | Proxy v3: Gemini added (3.5 Flash-Lite, 3.8 Flash), Haiku-with-thinking option, no-change guard, stricter prompt. Blind test upgraded to 5 models. Repo `munchineh/language-keyboard` created and connected to Cloudflare Builds (path `/proxy`, preview builds off). GEMINI_API_KEY added |
+| 2026-11-11 | v3 deployed via GitHub; all 5 models working; blind test run and published for judging |
