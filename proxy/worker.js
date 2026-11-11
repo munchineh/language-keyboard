@@ -3,7 +3,7 @@
 //   ANTHROPIC_API_KEY, GEMINI_API_KEY, APP_TOKEN
 // Privacy: this Worker never logs or stores the text it receives.
 
-const VERSION = "3";
+const VERSION = "3.1";
 const DEFAULT_MODEL = "haiku";
 const MAX_TEXT = 1000;      // characters per request
 const MAX_CONTEXT = 500;
@@ -19,6 +19,8 @@ const MODELS = {
   sonnet:       { provider: "claude", id: "claude-sonnet-5-5", effort: "low",                  forceTool: false, extraTokens: 2000 },
   gemini_lite:  { provider: "gemini", id: "gemini-3.5-flash-lite", thinkingLevel: "MINIMAL", extraTokens: 1000 },
   gemini_flash: { provider: "gemini", id: "gemini-3.8-flash",      thinkingLevel: "LOW",     extraTokens: 2000 },
+  gemini_lite31: { provider: "gemini", id: "gemini-3.1-flash-lite", thinkingLevel: "MINIMAL", extraTokens: 1000 },
+  gemini_flash36: { provider: "gemini", id: "gemini-3.6-flash",     thinkingLevel: "MINIMAL", extraTokens: 1000 },
 };
 
 // Slang glossary: sent with every request so slang is never "corrected".
