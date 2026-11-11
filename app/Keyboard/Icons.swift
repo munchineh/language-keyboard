@@ -20,11 +20,12 @@ struct SlidersShape: Shape {
     }
 }
 
-/// Solid gear with eight soft teeth (radius eases between inner and outer).
+/// Solid gear with six wide spokes and crisp edges (radius eases quickly
+/// between inner and outer, after Mancini's reference).
 struct GearShape: Shape {
-    var teeth = 8
-    var outer: CGFloat = 0.48
-    var inner: CGFloat = 0.385
+    var teeth = 6
+    var outer: CGFloat = 0.47
+    var inner: CGFloat = 0.365
 
     func path(in rect: CGRect) -> Path {
         let size = min(rect.width, rect.height)
@@ -36,13 +37,13 @@ struct GearShape: Shape {
             return u * u * (3 - 2 * u)
         }
         var path = Path()
-        let steps = 360
+        let steps = 720
         for k in 0...steps {
             let t = CGFloat(k) / CGFloat(steps) * 2 * .pi
             let phase = (t * CGFloat(teeth) / (2 * .pi)).truncatingRemainder(dividingBy: 1)
-            let f = min(ease(phase, 0.04, 0.16), 1 - ease(phase, 0.44, 0.56))
+            let f = min(ease(phase, 0.04, 0.08), 1 - ease(phase, 0.58, 0.62))
             let r = size * (inner + (outer - inner) * f)
-            let a = t - .pi / 2 - 2 * .pi / CGFloat(teeth) * 0.30
+            let a = t - .pi / 2 - 2 * .pi / CGFloat(teeth) * 0.33
             let p = CGPoint(x: c.x + r * cos(a), y: c.y + r * sin(a))
             if k == 0 { path.move(to: p) } else { path.addLine(to: p) }
         }
@@ -65,7 +66,7 @@ struct SettingsGlyph: View {
             ctx.drawLayer { layer in
                 layer.fill(GearShape().path(in: CGRect(origin: .zero, size: canvas)), with: .color(color))
                 layer.blendMode = .destinationOut
-                let mark = layer.resolve(Text(badge).font(.system(size: w * 0.44, weight: .bold)))
+                let mark = layer.resolve(Text(badge).font(.system(size: w * 0.41, weight: .bold)))
                 layer.draw(mark, at: CGPoint(x: w / 2, y: w / 2 + w * 0.005), anchor: .center)
             }
         }
