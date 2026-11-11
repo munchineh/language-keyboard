@@ -302,7 +302,7 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | iOS has no public way to open Settings › Keyboards directly (private `App-prefs:` links get apps rejected). The Setup button opens the app's own Settings page, which shows Keyboards › Language Keyboard and Allow Full Access | By design |
 | 2026-11-11 | Checks tab still uses technical words (proxy URL, app token, model). Fine for personal use; hide under "Advanced" before anyone else uses the app | Later |
 | 2026-11-11 | Setup check reads `AppleKeyboards` (undocumented but long-standing) with a fallback to the input modes; Full Access tick stays on even if Full Access is later turned off | Fine for personal use; recheck before App Store |
-| 2026-11-11 | GitHub Actions: macOS minutes count 10× on a private repo (1,860 of 2,000 used by 11 Nov). Repo going public makes them free; until confirmed, commits use `[skip ci]` | Waiting on visibility change |
+| 2026-11-11 | GitHub Actions: macOS minutes count 10× on a private repo (1,860 of 2,000 used by 11 Nov) | Done: repo made public 11 Nov (Actions free for public repos). First commit's author email rewritten to the GitHub no-reply address beforehand; PR #1's timeline still links to pre-rewrite commits |
 | 2026-11-11 | App icon is a placeholder (한 key with an orange underline) | Replace before TestFlight if wanted |
 | 2026-11-11 | Snapshot review: correction tip was cut off after one line; "Their gender" column squeezed to "T" | Fixed (text wraps, gender column 112pt) |
 | 2026-11-11 | Settings panel shows down to "They are / Their gender"; the rest (Tone, What I mean) needs a scroll | Done: compact rows fit without scrolling (D29) |
@@ -325,6 +325,7 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Research: Siri AI Developer Preview (iOS 27.3) and Foundation Models; 3 integration proposals saved in docs/research |
 | 2026-11-11 | Mac setup started remotely: Xcode download from App Store; folders granted |
 | 2026-11-11 | Xcode installed; Apple Developer Program enrolled; ~12 GB freed on the Mac |
+| 2026-11-11 | Repo public; setup live ticks (D39) build green in CI |
 | 2026-11-11 | Setup screen rewritten for language learners (no tech terms; each step says what it's for); Settings button moved above the steps. First Simulator run: app launches |
 | 2026-11-11 | One rewrite at a time (D35); long-press applies whatever the card shows; settings panel: Done moved onto the Language row so "Rewrite as" fits. Proxy still returns both options; asking for one would save time and tokens (later) |
 | 2026-11-11 | MVP to Mancini's feedback (D25–D34): two-tone icons, concentric card with blue highlights and arrow, suggestions bar, long-press return, emoji page, settings draft + Done, in-keyboard fields, Korean suggestions, pinyin input, explanation language. Proxy v3.3 (`explain`) waits for merge |
