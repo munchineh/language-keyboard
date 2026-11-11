@@ -32,17 +32,17 @@ struct SettingsGlyph: View {
     var body: some View {
         Canvas { ctx, canvas in
             let w = canvas.width
-            let markCenter = CGPoint(x: w * 0.74, y: w * 0.72)
-            let markFont = Font.system(size: w * 0.42, weight: .bold)
+            let markCenter = CGPoint(x: w * 0.78, y: w * 0.78)
+            let markFont = Font.system(size: w * 0.38, weight: .bold)
 
             ctx.drawLayer { layer in
-                // Sliders in the top-left 80% of the square.
-                let slidersRect = CGRect(x: 0, y: 0, width: w * 0.8, height: w * 0.8)
+                // Sliders fill most of the square, nudged up-left to make room for the mark.
+                let slidersRect = CGRect(x: -w * 0.08, y: -w * 0.06, width: w * 0.92, height: w * 0.92)
                 layer.stroke(SlidersShape().path(in: slidersRect), with: .color(primary),
-                             style: StrokeStyle(lineWidth: w * 0.068, lineCap: .round, lineJoin: .round))
+                             style: StrokeStyle(lineWidth: w * 0.062, lineCap: .round, lineJoin: .round))
                 // Knock out a gap around the mark.
                 layer.blendMode = .destinationOut
-                let r = w * 0.3
+                let r = w * 0.26
                 layer.fill(Path(ellipseIn: CGRect(x: markCenter.x - r, y: markCenter.y - r, width: r * 2, height: r * 2)),
                            with: .color(.black))
             }
