@@ -208,20 +208,15 @@ final class KeyboardModel: ObservableObject {
         }
     }
 
-    /// Long press on return: apply the correction (or the first rephrasing) without reaching up.
+    /// Long press on return applies the correction shown in the card.
     var canQuickApply: Bool {
-        switch check {
-        case .fix, .options: return editingField == nil
-        default: return false
-        }
+        if case .fix = check { return editingField == nil }
+        return false
     }
 
     func quickApply() {
-        switch check {
-        case .fix: applyCorrection()
-        case .options(_, let options): if let first = options.first { choose(first) }
-        default: return
-        }
+        guard canQuickApply else { return }
+        applyCorrection()
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
 
