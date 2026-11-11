@@ -13,6 +13,21 @@
 
 ---
 
+## 0. Handoff (read first)
+
+Chat A (planning, proxy, model choice) ended 2026-11-11. The next chat starts the Swift build (chats B + C in section 8).
+
+| Item | State |
+|---|---|
+| Next task | Create the Xcode project in this repo (`app/`): companion app + keyboard extension, shared App Group, built around the mockup. Then open it on the Mac by clicking in Xcode and build in the iPhone Simulator |
+| Mac access | Mac "mancinis-laptop-local" via the Claude desktop app. Folders: `~/Projects`, `~/Downloads`, Desktop, Documents, Movies, Pictures. Computer use: background mode preferred. **Terminal and Xcode are click-only (no typing)**, so generate the project files in the repo (e.g. a hand-written `.xcodeproj` or a generator run elsewhere) and copy them to `~/Projects/language-keyboard`. The Mac shell (`device_bash`) is a Linux VM: it can't run Xcode |
+| Waiting on Mancini | First Xcode launch (component install, Mac password) and signing in to Xcode with his Apple ID. Apple Developer Program enrolled (Individual) |
+| Model default | Leaning **Sonnet 5.5** for both languages (most accurate in 3-run scoring, ~1.5s). Not yet confirmed; Mancini's blind-test picks pending |
+| UI path | Swift directly (web prototype skipped) |
+| Open items | Rotate `APP_TOKEN` before daily use; blind-test judging page; Apple on-device model test (M2.5); Siri AI proposals in `docs/research/` |
+
+---
+
 ## 1. What we're building
 
 An iOS keyboard (one keyboard, all languages) that helps Mancini text naturally in Korean and Chinese first, German and English later.
