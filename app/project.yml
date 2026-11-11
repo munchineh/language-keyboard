@@ -40,6 +40,7 @@ schemes:
       config: Debug
       targets:
         - SharedTests
+        - KeyboardSnapshots
     archive:
       config: Release
   Keyboard:
@@ -124,4 +125,23 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mancinitan.LanguageKeyboard.SharedTests
+        GENERATE_INFOPLIST_FILE: YES
+
+  # Renders the keyboard in light and dark to PNGs (CI uploads them).
+  # Hosted by the app so UIKit can draw real windows.
+  KeyboardSnapshots:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Keyboard
+        excludes:
+          - Info.plist
+          - "*.entitlements"
+      - path: Shared
+      - path: SnapshotTests
+    dependencies:
+      - target: LanguageKeyboard
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mancinitan.LanguageKeyboard.KeyboardSnapshots
         GENERATE_INFOPLIST_FILE: YES

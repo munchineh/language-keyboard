@@ -45,7 +45,9 @@ final class KeyboardModel: ObservableObject {
 
     private var proxy: UITextDocumentProxy? { controller?.textDocumentProxy }
     var language: KeyboardLanguage { settings.language }
-    var hasFullAccess: Bool { controller?.hasFullAccess ?? false }
+    /// Set by snapshot tests, which have no keyboard controller.
+    var fullAccessOverride: Bool?
+    var hasFullAccess: Bool { fullAccessOverride ?? controller?.hasFullAccess ?? false }
 
     // MARK: - Lifecycle
 

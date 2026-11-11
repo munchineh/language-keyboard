@@ -28,6 +28,11 @@ final class KeyboardViewController: UIInputViewController {
 
         // Let the keyboard grow when the correction card appears.
         inputView?.allowsSelfSizing = true
+
+        // Follow light/dark changes while the keyboard is open.
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (controller: KeyboardViewController, _: UITraitCollection) in
+            controller.updateAppearance()
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {

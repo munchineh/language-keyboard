@@ -100,7 +100,7 @@ struct SettingsPanel: View {
                     if !model.hasFullAccess {
                         Text("Full Access is off: checks are paused and changes here aren't saved.")
                             .font(.system(size: 13))
-                            .foregroundStyle(KeyboardTheme.fixHighlight)
+                            .foregroundStyle(theme.fixHighlight)
                     }
                 }
                 .padding(.horizontal, 14)
@@ -169,7 +169,7 @@ struct FlowChips<Item: Hashable>: View {
                         .foregroundStyle(isOn ? .white : theme.text)
                         .padding(.horizontal, 14)
                         .frame(height: 32)
-                        .background(Capsule().fill(isOn ? KeyboardTheme.accent : theme.chip))
+                        .background(Capsule().fill(isOn ? theme.accent : theme.chip))
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(isOn ? .isSelected : [])

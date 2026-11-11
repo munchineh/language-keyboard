@@ -80,7 +80,7 @@ struct SuggestionBar: View {
         case .ok(let stiff, _):
             HStack(spacing: 8) {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(KeyboardTheme.good)
+                    .foregroundStyle(theme.good)
                     .font(.system(size: 18))
                 Text(model.summary)
                     .font(.system(size: 15))
@@ -90,7 +90,7 @@ struct SuggestionBar: View {
                 if stiff {
                     Button("More natural ›") { model.rephrase() }
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(KeyboardTheme.accent)
+                        .foregroundStyle(theme.accent)
                 }
             }
         case .fix(let original, let corrected, _):
@@ -101,7 +101,7 @@ struct SuggestionBar: View {
                     .foregroundStyle(theme.secondaryText)
                     .lineLimit(1)
                 Spacer(minLength: 4)
-                CapsuleButton(title: "Apply") { model.applyCorrection() }
+                CapsuleButton(title: "Apply", theme: theme) { model.applyCorrection() }
             }
         case .rephrasing:
             HStack(spacing: 8) {
@@ -114,12 +114,12 @@ struct SuggestionBar: View {
                 Spacer()
                 Button("Keep mine") { model.dismissResult() }
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(KeyboardTheme.accent)
+                    .foregroundStyle(theme.accent)
             }
         case .message(let text):
             Text(text)
                 .font(.system(size: 14))
-                .foregroundStyle(KeyboardTheme.fixHighlight)
+                .foregroundStyle(theme.fixHighlight)
                 .lineLimit(2)
                 .minimumScaleFactor(0.85)
         }
@@ -128,6 +128,7 @@ struct SuggestionBar: View {
 
 struct CapsuleButton: View {
     let title: String
+    let theme: KeyboardTheme
     let action: () -> Void
 
     var body: some View {
@@ -137,7 +138,7 @@ struct CapsuleButton: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 16)
                 .frame(height: 34)
-                .background(Capsule().fill(KeyboardTheme.accent))
+                .background(Capsule().fill(theme.accent))
         }
     }
 }
@@ -216,7 +217,7 @@ struct ResultCard: View {
         var result = AttributedString()
         for segment in TextDiff.segments(old: old, new: new) {
             var piece = AttributedString(segment.text)
-            piece.foregroundColor = segment.changed ? KeyboardTheme.fixHighlight : theme.text
+            piece.foregroundColor = segment.changed ? theme.fixHighlight : theme.text
             if segment.changed { piece.font = .system(size: 15, weight: .semibold) }
             result += piece
         }
