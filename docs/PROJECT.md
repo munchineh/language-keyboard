@@ -146,7 +146,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | Claude API access | Working (Haiku confirmed live) |
 | Blind test | Haiku (thinking off) on 36 sentences: avg 1.18s model time (0.75–2.6s). About 23 good, 4 real misses, 5 over-corrections or no-change "fixes". Sonnet failed (400), needs re-run after v2. Add a third candidate: Haiku with thinking at low effort |
 | Measured speed | Haiku ~1.1–1.2s model time; ~2–3s total from curl on a Mac (cold connections, served from Cloudflare SEA/LAX). Expect ~1.4s per check in the keyboard with a reused connection |
-| iOS app | Not started. Mac setup in progress (2026-11-11): Xcode was not installed; download started from the Mac App Store (~57 GB free on disk). Claude can reach the Mac remotely: folder access to `~/Projects` and `~/Downloads`, and computer use (Terminal and Xcode are click-only, no typing, so projects are generated in the repo and opened in Xcode by clicking). Apple Developer Program: signed in with a free account, enrolment (KYC) pending on Mancini's phone |
+| iOS app | Not started. Mac ready (2026-11-11): Xcode installed from the App Store; ~67 GB free after cleanup. Apple Developer Program: enrolled 2026-11-11 (Individual). Claude can reach the Mac remotely: folders `~/Projects`, `~/Downloads`, Desktop, Documents, Movies, Pictures; computer use (Terminal and Xcode are click-only, so the Xcode project is generated in the repo and opened in Xcode by clicking). Still needs Mancini at the Mac once: Xcode first-launch component install (may ask for the Mac password) and signing in to Xcode with his Apple ID |
 
 ---
 
@@ -237,3 +237,4 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Proxy 3.2 prompt (chosen speech level is deliberate, honorific subjects, style-only edits are "stiff", Taiwan 儿化, keep content). Added `blind-test/score.py` (automatic scoring vs expected answers, multiple runs) |
 | 2026-11-11 | Research: Siri AI Developer Preview (iOS 27.3) and Foundation Models; 3 integration proposals saved in docs/research |
 | 2026-11-11 | Mac setup started remotely: Xcode download from App Store; folders granted |
+| 2026-11-11 | Xcode installed; Apple Developer Program enrolled; ~12 GB freed on the Mac |
