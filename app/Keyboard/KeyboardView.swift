@@ -162,7 +162,7 @@ struct ResultCard: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                ArrowButton(theme: theme) { model.applyCorrection() }
+                ArrowButton(theme: theme) { model.applyCard() }
             }
         case .stiff:
             HStack(spacing: 10) {
@@ -177,30 +177,23 @@ struct ResultCard: View {
                 ProgressView().controlSize(.small)
                 Text("Finding a more natural way…").font(.system(size: 14)).foregroundStyle(theme.secondaryText)
             }
-        case .options(let original, let options):
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(options) { option in
-                    HStack(alignment: .center, spacing: 10) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(option.label.uppercased())
-                                .font(.system(size: 11, weight: .semibold))
-                                .tracking(0.4)
-                                .foregroundStyle(theme.tertiaryText)
-                            highlighted(old: original, new: option.text)
-                                .font(.system(size: 15))
-                                .lineLimit(2)
-                                .fixedSize(horizontal: false, vertical: true)
-                            if let note = option.note, !note.isEmpty {
-                                Text(note)
-                                    .font(.system(size: 13))
-                                    .foregroundStyle(theme.secondaryText)
-                                    .lineLimit(1)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        ArrowButton(theme: theme, label: "Use \(option.label)") { model.choose(option) }
+        case .rephrased(let original, let option):
+            HStack(alignment: .center, spacing: 10) {
+                VStack(alignment: .leading, spacing: 3) {
+                    highlighted(old: original, new: option.text)
+                        .font(.system(size: 15))
+                        .lineLimit(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let note = option.note, !note.isEmpty {
+                        Text(note)
+                            .font(.system(size: 13))
+                            .foregroundStyle(theme.secondaryText)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                ArrowButton(theme: theme, label: "Use this") { model.applyCard() }
             }
         case .message(let text):
             Text(text)

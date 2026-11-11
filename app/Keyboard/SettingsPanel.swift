@@ -12,27 +12,23 @@ struct SettingsPanel: View {
     private var context: CheckContext { draft.context(for: language) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Check settings")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(theme.text)
-                Spacer()
-                Button { model.saveSettings() } label: {
-                    Text("Done")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 16)
-                        .frame(height: 32)
-                        .background(Capsule().fill(theme.accent))
-                }
-                .buttonStyle(.plain)
-            }
-            .frame(height: 36)
-
+        VStack(alignment: .leading, spacing: 7) {
+            // Done sits on the first row so every setting fits in the keyboard's height.
             row("Language") {
-                Picker("Language", selection: model.draftBinding(\.language, default: model.language)) {
-                    ForEach(KeyboardLanguage.allCases) { Text($0.name).tag($0) }
+                HStack(spacing: 10) {
+                    Picker("Language", selection: model.draftBinding(\.language, default: model.language)) {
+                        ForEach(KeyboardLanguage.allCases) { Text($0.name).tag($0) }
+                    }
+                    Button { model.saveSettings() } label: {
+                        Text("Done")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 16)
+                            .frame(height: 32)
+                            .background(Capsule().fill(theme.accent))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Saves these settings")
                 }
             }
 
@@ -70,6 +66,11 @@ struct SettingsPanel: View {
                     ForEach(Tone.allCases) { Text($0.label).tag($0) }
                 }
             }
+            row("Rewrite as") {
+                Picker("Rewrite as", selection: model.contextBinding(\.rephraseStyle)) {
+                    ForEach(RephraseStyle.allCases) { Text($0.label).tag($0) }
+                }
+            }
             row("What I mean") { field(.note, value: context.note) }
 
             Spacer(minLength: 0)
@@ -83,8 +84,8 @@ struct SettingsPanel: View {
         .pickerStyle(.segmented)
         .labelsHidden()
         .padding(.horizontal, 14)
-        .padding(.top, 8)
-        .padding(.bottom, 6)
+        .padding(.top, 10)
+        .padding(.bottom, 4)
     }
 
     private func row<Content: View>(_ title: String, @ViewBuilder _ content: () -> Content) -> some View {

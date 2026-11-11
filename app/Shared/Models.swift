@@ -59,6 +59,15 @@ enum Gender: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+/// Which rewrite the card offers when correct text sounds stiff. Only one is shown.
+enum RephraseStyle: String, Codable, CaseIterable, Identifiable {
+    case natural, casual
+    var id: String { rawValue }
+    var label: String { self == .natural ? "Natural" : "Very casual" }
+    /// Position in the proxy's two options (Natural first, Very casual second).
+    var optionIndex: Int { self == .natural ? 0 : 1 }
+}
+
 enum Tone: String, Codable, CaseIterable, Identifiable {
     case warm, playful, neutral, firm
     var id: String { rawValue }
@@ -113,6 +122,7 @@ struct CheckContext: Codable, Equatable {
     var listenerAge: RelativeAge = .same
     var listenerGender: Gender = .unset
     var tone: Tone = .neutral
+    var rephraseStyle: RephraseStyle = .natural
     /// "What I mean", sent with every check until cleared.
     var note: String = ""
 
@@ -126,6 +136,7 @@ struct CheckContext: Codable, Equatable {
         listenerAge = (try? c.decodeIfPresent(RelativeAge.self, forKey: .listenerAge)) ?? d.listenerAge
         listenerGender = (try? c.decodeIfPresent(Gender.self, forKey: .listenerGender)) ?? d.listenerGender
         tone = (try? c.decodeIfPresent(Tone.self, forKey: .tone)) ?? d.tone
+        rephraseStyle = (try? c.decodeIfPresent(RephraseStyle.self, forKey: .rephraseStyle)) ?? d.rephraseStyle
         note = (try? c.decodeIfPresent(String.self, forKey: .note)) ?? d.note
     }
 }

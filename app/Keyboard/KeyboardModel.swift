@@ -10,7 +10,8 @@ enum CheckState: Equatable {
     case stiff(text: String)
     case fix(original: String, corrected: String, tip: String)
     case rephrasing(original: String)
-    case options(original: String, options: [RephraseOption])
+    /// The rewrite in the style chosen in settings (one at a time, to keep the card short).
+    case rephrased(original: String, option: RephraseOption)
     case message(String)
 
     /// Something the card shows.
@@ -208,15 +209,18 @@ final class KeyboardModel: ObservableObject {
         }
     }
 
-    /// Long press on return applies the correction shown in the card.
+    /// Long press on return applies whatever the card shows (a correction or a rewrite).
     var canQuickApply: Bool {
-        if case .fix = check { return editingField == nil }
-        return false
+        guard editingField == nil else { return false }
+        switch check {
+        case .fix, .rephrased: return true
+        default: return false
+        }
     }
 
     func quickApply() {
         guard canQuickApply else { return }
-        applyCorrection()
+        applyCard()
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
 
@@ -431,9 +435,13 @@ final class KeyboardModel: ObservableObject {
 
     // MARK: - Results
 
-    func applyCorrection() {
-        guard case .fix(let original, let corrected, _) = check else { return }
-        replace(original: original, with: corrected)
+    /// The card's blue arrow, or a long press on return.
+    func applyCard() {
+        switch check {
+        case .fix(let original, let corrected, _): replace(original: original, with: corrected)
+        case .rephrased(let original, let option): replace(original: original, with: option.text)
+        default: break
+        }
     }
 
     func rephrase() {
@@ -444,17 +452,19 @@ final class KeyboardModel: ObservableObject {
             do {
                 let response = try await ProxyClient.shared.rephrase(self.request(for: text))
                 guard !Task.isCancelled else { return }
-                self.check = response.options.isEmpty ? .ok(text: text) : .options(original: text, options: response.options)
+                let style = self.settings.context(for: self.language).rephraseStyle
+                let options = response.options
+                if options.isEmpty {
+                    self.check = .ok(text: text)
+                } else {
+                    let option = options.indices.contains(style.optionIndex) ? options[style.optionIndex] : options[0]
+                    self.check = .rephrased(original: text, option: option)
+                }
             } catch {
                 guard !Task.isCancelled else { return }
                 self.check = .message(error.localizedDescription)
             }
         }
-    }
-
-    func choose(_ option: RephraseOption) {
-        guard case .options(let original, _) = check else { return }
-        replace(original: original, with: option.text)
     }
 
     func dismissResult() {

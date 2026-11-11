@@ -60,6 +60,9 @@ struct WritingView: View {
                     Picker("Tone", selection: binding(\.tone)) {
                         ForEach(Tone.allCases) { Text($0.label).tag($0) }
                     }
+                    Picker("Rewrite as", selection: binding(\.rephraseStyle)) {
+                        ForEach(RephraseStyle.allCases) { Text($0.label).tag($0) }
+                    }
                     TextField("What I mean (optional)", text: binding(\.note))
                 } header: {
                     Text(language.name)

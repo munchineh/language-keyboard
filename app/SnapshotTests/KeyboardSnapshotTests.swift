@@ -38,10 +38,8 @@ final class KeyboardSnapshotTests: XCTestCase {
             $0.check = .stiff(text: "그런데 그것은 정말 좋습니다.")
         },
         Scenario(name: "06-rephrase", typed: "그런데 그것은 정말 좋습니다.", reply: "새로 생긴 카페 가 봤어?") {
-            $0.check = .options(original: "그런데 그것은 정말 좋습니다.", options: [
-                RephraseOption(label: "Natural", text: "근데 거기 진짜 좋아.", note: "근데 and 거기 are how people say it in chat"),
-                RephraseOption(label: "Very casual", text: "근데 거기 개좋아 ㅋㅋ", note: "개- = very, only with close friends"),
-            ])
+            $0.check = .rephrased(original: "그런데 그것은 정말 좋습니다.",
+                                  option: RephraseOption(label: "Natural", text: "근데 거기 진짜 좋아.", note: "근데 and 거기 are how people say it in chat"))
         },
         Scenario(name: "07-settings-korean", typed: "친구랑 영화 보러 갈 거야", reply: "이번 주말에 뭐 해?") {
             $0.settings.updateContext(for: .korean) { $0.speakingTo = "선배"; $0.listenerAge = .older }
