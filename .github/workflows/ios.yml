@@ -3,7 +3,7 @@
 # app/LanguageKeyboard.xcodeproj (plus the Info.plist and entitlements files
 # XcodeGen writes) back so the Mac can open it without Terminal.
 # TestFlight upload comes later, once the App Store Connect API key is in
-# the repo secrets (see docs/PROJECT.md).
+# the repo secrets.
 
 name: iOS build
 

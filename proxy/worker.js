@@ -3,7 +3,7 @@
 //   ANTHROPIC_API_KEY, GEMINI_API_KEY, APP_TOKEN
 // Privacy: this Worker never logs or stores the text it receives.
 
-const VERSION = "3.3";
+const VERSION = "3.4";
 const DEFAULT_MODEL = "haiku";
 const MAX_TEXT = 1000;      // characters per request
 const MAX_CONTEXT = 500;
@@ -164,6 +164,30 @@ function json(body, status = 200, extra = {}) {
   });
 }
 
+// Rate limits (bindings in wrangler.jsonc). Limits count per Cloudflare
+// location and are approximate; provider spending caps are the hard backstop.
+// If a binding is missing or errors, the request is allowed (fail open) so a
+// config slip never breaks the keyboard.
+async function withinLimit(limiter, key) {
+  if (!limiter) return true;
+  try {
+    const { success } = await limiter.limit({ key });
+    return success;
+  } catch {
+    return true;
+  }
+}
+
+// Short hash so the raw token is never used as a limiter key.
+async function tokenKey(token) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  return [...new Uint8Array(digest).slice(0, 8)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function tooMany() {
+  return json({ error: "rate limited" }, 429, { "retry-after": "60" });
+}
+
 // Constant-time comparison so the token can't be guessed by timing.
 function safeEqual(a, b) {
   const enc = new TextEncoder();
@@ -280,11 +304,18 @@ export default {
       return json({ error: "not found" }, 404);
     }
 
+    // Per-IP limit first, so token guessing and junk traffic are capped too.
+    const ip = request.headers.get("cf-connecting-ip") || "unknown";
+    if (!(await withinLimit(env.IP_LIMITER, `ip:${ip}`))) return tooMany();
+
     const auth = request.headers.get("authorization") || "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
     if (!env.APP_TOKEN || !safeEqual(token, env.APP_TOKEN)) {
       return json({ error: "unauthorized" }, 401);
     }
+
+    // Per-token limit: one leaked token can't run up the API bill.
+    if (!(await withinLimit(env.TOKEN_LIMITER, `tok:${await tokenKey(token)}`))) return tooMany();
 
     let body;
     try {
