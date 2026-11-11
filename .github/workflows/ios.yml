@@ -1,6 +1,7 @@
 # Builds the iOS app (companion app + keyboard extension) on every push that
 # touches app/. Runs the unit tests, then commits the generated
-# app/LanguageKeyboard.xcodeproj back so the Mac can open it without Terminal.
+# app/LanguageKeyboard.xcodeproj (plus the Info.plist and entitlements files
+# XcodeGen writes) back so the Mac can open it without Terminal.
 # TestFlight upload comes later, once the App Store Connect API key is in
 # the repo secrets (see docs/PROJECT.md).
 
@@ -87,7 +88,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/LanguageKeyboard.xcodeproj
+          # XcodeGen also writes the Info.plist and entitlements files.
+          git add app/LanguageKeyboard.xcodeproj app/*/Info.plist app/*/*.entitlements
           if git diff --cached --quiet; then
             echo "Xcode project unchanged"
           else
