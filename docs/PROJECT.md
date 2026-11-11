@@ -15,7 +15,7 @@
 
 ## 0. Handoff (read first)
 
-Chat B (iOS project + CI) ended 2026-11-11. The app skeleton builds and tests green on GitHub Actions. Branch `ios-app`, PR to `main` open.
+Chat B (iOS project + CI) ended 2026-11-11. The app skeleton builds and tests green on GitHub Actions. Branch `ios-app`, [PR #1](https://github.com/munchineh/language-keyboard/pull/1) to `main` open.
 
 | Item | State |
 |---|---|
@@ -275,7 +275,7 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Xcode on the Mac is at its first-launch licence screen; Simulator not installed yet | Waiting on Mancini |
 | 2026-11-11 | Mac shell has no GitHub credentials, so the Mac copy is a snapshot | Re-copy after changes, or sign in to GitHub in Xcode (Settings › Accounts) and pull there |
 | 2026-11-11 | App icon is a placeholder (한 key with an orange underline) | Replace before TestFlight if wanted |
-| 2026-11-11 | `gh` CLI token in the cloud session is invalid; plain `api.github.com` calls work for reading runs | Opening PRs may need the GitHub web UI |
+| 2026-11-11 | `gh` CLI token in the cloud session is invalid | Use plain `curl` to `api.github.com` (with `Content-Type: application/json` for POSTs): reading runs and opening PRs both work |
 
 ---
 
