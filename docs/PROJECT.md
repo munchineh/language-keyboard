@@ -110,6 +110,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | Claude API credits | Claude Console org (Individual), linked via claude.ai (web only) › Settings › Billing › API credits |
 | Worker code | `proxy/worker.js` (v3) + `proxy/wrangler.jsonc` in the repo |
 | Blind test | v3 run complete: 36 sentences × 5 models, 0 errors. Judging page: [Keyboard blind test](https://claude.ai/artifact/4AKy3ivDKKEW1PvRASiYMH) (pick the best answer per sentence, then Reveal). Model time: haiku avg 1.10s (median 1.03s) · haiku_think 2.03s (1.80s) · sonnet 1.64s (1.49s) · gemini_lite 1.36s (0.79s, p90 2.7s) · gemini_flash 4.14s (3.61s). Waiting on Mancini's picks |
+| Auto-scored (prompt 3.2, 3 runs × 36) | **sonnet 32.0** (31 always right, 2 flaky) · haiku_think 30.3 · gemini_lite 30.0 (5 flaky) · haiku 28.0. Haiku now always misses 선생님께 드렸어, 오셨어, 안 했어서 (it caught some of these under prompt 3.1, so 3.2 may have hurt Haiku). Expected answers for #10 잤었어, #23 전화를 할게요, #35 再一次去 are debatable |
 
 ---
 
@@ -214,7 +215,9 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | gemini_flash (3.8 Flash) averages 4.1s; LOW is its lowest thinking level | Likely too slow for the pause check regardless of quality |
 | 2026-11-11 | Speed-only rerun (36 sentences, one model at a time): gemini_lite median 0.80s / p90 0.96s · gemini_lite31 0.85s / 1.10s · haiku 0.96s / 1.23s · gemini_flash36 1.29s / 1.55s. The earlier 2.7s p90 for gemini_lite came from running 5 models at once | Fastest: Gemini 3.5 Flash-Lite. Quality decided by the blind test |
 | 2026-11-11 | Haiku vs Gemini 3.5 Flash-Lite, my read of the 36 answers: Haiku clearly better on 6 (follows the chosen speech level, keeps meaning, correct-but-stiff handled right), Flash-Lite better on 3 (all Chinese: 的/得, Taiwan 哪, a more natural Korean reason clause). Flash-Lite overrode the chosen 해요체/합쇼체 three times and once dropped 책을 | Leaning: Haiku for Korean, Flash-Lite worth considering for Chinese. Mancini's own picks still to come |
-| 2026-11-11 | Both models: missed 할머니가 왔어 → 오셨어; changed a chosen 해요체 to 반말 for a friend; put style edits into "fix" | Open: prompt should say the chosen speech level is intentional (only flag mixing or going below it), and add honorific-subject checks |
+| 2026-11-11 | Both models: missed 할머니가 왔어 → 오셨어; changed a chosen 해요체 to 반말 for a friend; put style edits into "fix" | Done in proxy 3.2 |
+| 2026-11-11 | Run-to-run variance is large: single runs can't separate models. Use `score.py` with 3+ runs for decisions | Process rule |
+| 2026-11-11 | gemini_lite once corrupted text (교수님 → 교수닐) and once changed meaning (我想再去了) | Watch: a correction that introduces errors is worse than none |
 | 2026-11-11 | Haiku missed: 안 했어서, 언니 from a male speaker, 왜냐하면 structure, 오에스티 → OST | Open: compare Sonnet and Haiku with thinking on |
 
 ---
@@ -230,3 +233,4 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Proxy v3: Gemini added (3.5 Flash-Lite, 3.8 Flash), Haiku-with-thinking option, no-change guard, stricter prompt. Blind test upgraded to 5 models. Repo `munchineh/language-keyboard` created and connected to Cloudflare Builds (path `/proxy`, preview builds off). GEMINI_API_KEY added |
 | 2026-11-11 | v3 deployed via GitHub; all 5 models working; blind test run and published for judging |
 | 2026-11-11 | Proxy 3.1: added gemini_lite31 and gemini_flash36 for speed comparison |
+| 2026-11-11 | Proxy 3.2 prompt (chosen speech level is deliberate, honorific subjects, style-only edits are "stiff", Taiwan 儿化, keep content). Added `blind-test/score.py` (automatic scoring vs expected answers, multiple runs) |
