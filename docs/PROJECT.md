@@ -143,7 +143,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 
 | Item | Location |
 |---|---|
-| Code + this doc | GitHub repo `language-keyboard` (private): `proxy/`, `docs/`, `blind-test/`. Cloudflare deploys `proxy/` on every push to `main` |
+| Code + this doc | GitHub repo `language-keyboard` (**public** since 11 Nov 2026): `proxy/`, `docs/`, `blind-test/`, `app/`. Cloudflare deploys `proxy/` on every push to `main`. Never commit keys, tokens or personal details; see "Security notes" in section 9 |
 | `ANTHROPIC_API_KEY` | Cloudflare › keyboard-proxy › Settings › Variables and Secrets (Secret) |
 | `GEMINI_API_KEY` | Same place. Key from Google AI Studio, on the **billed** project (free tier data may be used by Google and read by reviewers) |
 | `APP_TOKEN` | Same place, plus Mancini's password manager ("keyboard-proxy token"). **Rotate before daily use** (an earlier one appeared in a screenshot) |
@@ -303,6 +303,7 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Checks tab still uses technical words (proxy URL, app token, model). Fine for personal use; hide under "Advanced" before anyone else uses the app | Later |
 | 2026-11-11 | Setup check reads `AppleKeyboards` (undocumented but long-standing) with a fallback to the input modes; Full Access tick stays on even if Full Access is later turned off | Fine for personal use; recheck before App Store |
 | 2026-11-11 | GitHub Actions: macOS minutes count 10× on a private repo (1,860 of 2,000 used by 11 Nov) | Done: repo made public 11 Nov (Actions free for public repos). First commit's author email rewritten to the GitHub no-reply address beforehand; PR #1's timeline still links to pre-rewrite commits |
+| 2026-11-11 | Security audit (repo public): no keys or tokens in any of 80 file versions (detect-secrets + patterns); no address, phone or birthday. Open: (1) rotate `APP_TOKEN` (old one seen in a screenshot, proxy URL now public); (2) spend caps on Claude Console and Gemini; (3) old commit `582d728` with the Gmail author is still served by SHA (ask GitHub Support to purge); (4) proxy has no per-token rate limit; (5) doc mentions Claude Ultra, Gemini billing and the Mac's name | Waiting on Mancini for 1–3 |
 | 2026-11-11 | App icon is a placeholder (한 key with an orange underline) | Replace before TestFlight if wanted |
 | 2026-11-11 | Snapshot review: correction tip was cut off after one line; "Their gender" column squeezed to "T" | Fixed (text wraps, gender column 112pt) |
 | 2026-11-11 | Settings panel shows down to "They are / Their gender"; the rest (Tone, What I mean) needs a scroll | Done: compact rows fit without scrolling (D29) |
