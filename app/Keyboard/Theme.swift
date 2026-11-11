@@ -8,6 +8,8 @@ struct KeyboardTheme {
 
     var text: Color { isDark ? .white : .black }
     var secondaryText: Color { isDark ? Color.white.opacity(0.72) : Color.black.opacity(0.62) }
+    /// Explanations under corrections: quieter than the corrected text.
+    var faintText: Color { isDark ? Color.white.opacity(0.5) : Color.black.opacity(0.42) }
     var tertiaryText: Color { isDark ? Color.white.opacity(0.55) : Color.black.opacity(0.45) }
 
     var key: Color { isDark ? Color.white.opacity(0.17) : .white }
@@ -30,7 +32,7 @@ struct KeyboardTheme {
     /// Warnings (no Full Access, proxy errors).
     var warning: Color { isDark ? Color(red: 1, green: 179 / 255, blue: 64 / 255) : Color(red: 201 / 255, green: 92 / 255, blue: 0) }
     /// Second tone of two-tone icons (the language mark next to the settings icon).
-    var iconSecondary: Color { isDark ? Color.white.opacity(0.45) : Color.black.opacity(0.38) }
+    var iconSecondary: Color { isDark ? Color.white.opacity(0.42) : Color.black.opacity(0.32) }
     /// "Looks natural" tick (#30d158 dark, #248a3d light).
     var good: Color { isDark ? Color(red: 48 / 255, green: 209 / 255, blue: 88 / 255) : Color(red: 36 / 255, green: 138 / 255, blue: 61 / 255) }
 

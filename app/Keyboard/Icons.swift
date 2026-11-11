@@ -19,33 +19,39 @@ struct SlidersShape: Shape {
     }
 }
 
-/// Settings icon with the current language mark in the second tone.
-/// The mark turns green when the last check found nothing to fix, and pulses while checking.
+/// Settings icon: the sliders in the main tone, with the language mark (한 / 中)
+/// in the lighter tone overlapping the bottom-right corner diagonally. The sliders
+/// are knocked out around the mark so the two never touch. The mark never
+/// changes colour; check status lives in the suggestion bar instead.
 struct SettingsGlyph: View {
     let badge: String
     let primary: Color
     let secondary: Color
-    var pulsing = false
-
-    @State private var dim = false
+    var size: CGFloat = 28
 
     var body: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 2) {
-            SlidersShape()
-                .stroke(primary, style: StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round))
-                .frame(width: 24, height: 24)
-                .alignmentGuide(.lastTextBaseline) { d in d[.bottom] - 4 }
-            Text(badge)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(secondary)
-                .opacity(pulsing && dim ? 0.35 : 1)
-        }
-        .onAppear { if pulsing { startPulse() } }
-        .onChange(of: pulsing) { _, on in if on { startPulse() } else { dim = false } }
-    }
+        Canvas { ctx, canvas in
+            let w = canvas.width
+            let markCenter = CGPoint(x: w * 0.74, y: w * 0.72)
+            let markFont = Font.system(size: w * 0.42, weight: .bold)
 
-    private func startPulse() {
-        withAnimation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true)) { dim = true }
+            ctx.drawLayer { layer in
+                // Sliders in the top-left 80% of the square.
+                let slidersRect = CGRect(x: 0, y: 0, width: w * 0.8, height: w * 0.8)
+                layer.stroke(SlidersShape().path(in: slidersRect), with: .color(primary),
+                             style: StrokeStyle(lineWidth: w * 0.068, lineCap: .round, lineJoin: .round))
+                // Knock out a gap around the mark.
+                layer.blendMode = .destinationOut
+                let r = w * 0.3
+                layer.fill(Path(ellipseIn: CGRect(x: markCenter.x - r, y: markCenter.y - r, width: r * 2, height: r * 2)),
+                           with: .color(.black))
+            }
+            var mark = ctx.resolve(Text(badge).font(markFont))
+            mark.shading = .color(secondary)
+            ctx.draw(mark, at: markCenter, anchor: .center)
+        }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
     }
 }
 

@@ -50,7 +50,7 @@ struct SuggestionBar: View {
         HStack(spacing: 0) {
             Button { model.openSettings() } label: {
                 SettingsGlyph(badge: model.language.badge, primary: theme.text.opacity(0.85),
-                              secondary: badgeColor, pulsing: model.check == .checking)
+                              secondary: theme.iconSecondary)
                     .frame(width: 56, height: 40)
                     .contentShape(Rectangle())
             }
@@ -59,21 +59,32 @@ struct SuggestionBar: View {
 
             Rectangle().fill(theme.divider).frame(width: 1, height: 22)
 
-            if model.language == .chinese {
-                candidates
-            } else {
-                predictions
+            switch model.check {
+            case .checking where model.suggestions.isEmpty:
+                status { ProgressView().controlSize(.small) } text: { "Checking…" }
+            case .ok:
+                // Green only for success.
+                status {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 17))
+                        .foregroundStyle(theme.good)
+                } text: { "Looks right!" }
+            default:
+                if model.language == .chinese { candidates } else { predictions }
             }
         }
         .padding(.horizontal, 6)
     }
 
-    private var badgeColor: Color {
-        switch model.check {
-        case .ok: return theme.good
-        case .checking: return theme.accent
-        default: return theme.iconSecondary
+    /// Check status in the space where suggestions sit.
+    private func status<Icon: View>(@ViewBuilder _ icon: () -> Icon, text: () -> String) -> some View {
+        HStack(spacing: 6) {
+            icon()
+            Text(text())
+                .font(.system(size: 16))
+                .foregroundStyle(theme.secondaryText)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     /// Three slots, like Apple's bar. Empty slots stay blank.
@@ -156,7 +167,7 @@ struct ResultCard: View {
                     if !tip.isEmpty {
                         Text(tip)
                             .font(.system(size: 13))
-                            .foregroundStyle(theme.secondaryText)
+                            .foregroundStyle(theme.faintText)
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -187,7 +198,7 @@ struct ResultCard: View {
                     if let note = option.note, !note.isEmpty {
                         Text(note)
                             .font(.system(size: 13))
-                            .foregroundStyle(theme.secondaryText)
+                            .foregroundStyle(theme.faintText)
                             .lineLimit(2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
