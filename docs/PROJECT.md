@@ -95,6 +95,8 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | `sonnet` | claude-sonnet-5-5 | Thinking can't be turned off; effort low, tool_choice auto |
 | `gemini_lite` | gemini-3.5-flash-lite | Thinking MINIMAL, JSON schema output |
 | `gemini_flash` | gemini-3.8-flash | Thinking LOW (its lowest), JSON schema output |
+| `gemini_lite31` | gemini-3.1-flash-lite | Thinking MINIMAL (speed test only) |
+| `gemini_flash36` | gemini-3.6-flash | Thinking MINIMAL (speed test only) |
 - Slang glossary is a list inside the Worker for now (plan: move to Cloudflare KV, refresh monthly).
 
 ### Where things live (no secret values here)
@@ -210,6 +212,7 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Prompt now includes general rules for address terms by gender and texting shortcuts. Same prompt for every model, so the comparison stays fair, but some test sentences overlap these rules | Note when reading results; add fresh real messages to the test set |
 | 2026-11-11 | Smoke test: haiku_think passed 안 했어서 as ok, while haiku (thinking off), sonnet and both Geminis caught it | Watch in blind-test results |
 | 2026-11-11 | gemini_flash (3.8 Flash) averages 4.1s; LOW is its lowest thinking level | Likely too slow for the pause check regardless of quality |
+| 2026-11-11 | Speed-only rerun (36 sentences, one model at a time): gemini_lite median 0.80s / p90 0.96s · gemini_lite31 0.85s / 1.10s · haiku 0.96s / 1.23s · gemini_flash36 1.29s / 1.55s. The earlier 2.7s p90 for gemini_lite came from running 5 models at once | Fastest: Gemini 3.5 Flash-Lite. Quality decided by the blind test |
 | 2026-11-11 | Haiku missed: 안 했어서, 언니 from a male speaker, 왜냐하면 structure, 오에스티 → OST | Open: compare Sonnet and Haiku with thinking on |
 
 ---
@@ -224,3 +227,4 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Blind test built (36 sentences); Haiku run complete; Sonnet bug found; proxy v2 written; this doc created |
 | 2026-11-11 | Proxy v3: Gemini added (3.5 Flash-Lite, 3.8 Flash), Haiku-with-thinking option, no-change guard, stricter prompt. Blind test upgraded to 5 models. Repo `munchineh/language-keyboard` created and connected to Cloudflare Builds (path `/proxy`, preview builds off). GEMINI_API_KEY added |
 | 2026-11-11 | v3 deployed via GitHub; all 5 models working; blind test run and published for judging |
+| 2026-11-11 | Proxy 3.1: added gemini_lite31 and gemini_flash36 for speed comparison |
