@@ -3,7 +3,7 @@
 //   ANTHROPIC_API_KEY, GEMINI_API_KEY, APP_TOKEN
 // Privacy: this Worker never logs or stores the text it receives.
 
-const VERSION = "3.1";
+const VERSION = "3.2";
 const DEFAULT_MODEL = "haiku";
 const MAX_TEXT = 1000;      // characters per request
 const MAX_CONTEXT = 500;
@@ -63,13 +63,14 @@ function profileLines(lang, p = {}) {
 const LANG_RULES = {
   ko: `Korean rules:
 - Check every verb and adjective ending, including connective endings (-어서, -는데, -고), for valid conjugation.
-- Check the speech level against the profile (반말 / 해요체 / 합쇼체) and keep it consistent within the message.
-- Honorifics also apply to people being talked ABOUT, even in 반말 (e.g. 선생님한테 줬어 -> 선생님께 드렸어).
+- The speech level in the profile (반말 / 해요체 / 합쇼체) is the user's deliberate choice, whatever the relationship. Text already in that level is correct. Flag only text in a different level or mixing levels, and always correct TO the chosen level, never to another one.
+- Honorifics also apply to people being talked ABOUT, even in 반말: respected people (grandparents, parents, teachers, bosses, older strangers) take -(으)시- on their verbs and honorific particles/verbs (께, 드리다, 계시다, 드시다).
 - Address terms must match the speaker's and listener's genders: a male speaker says 형 / 누나, a female speaker says 오빠 / 언니. Check them when genders are given.
 - Natural texting shortcuts are correct and must not be "fixed": dropped particles (집 가), omitted subjects, endings like -는 중 or noun endings without 이야, ㅋㅋ / ㅠㅠ.
 - Type the way Koreans actually type: OST, TV, PC, not 오에스티, 티비, 피씨.`,
   zh: `Chinese rules:
-- Follow the region setting (mainland vs Taiwan vocabulary and particles, e.g. 哪儿 vs 哪) and the script setting (simplified vs traditional characters). Output text in the chosen script.
+- Follow the region setting (mainland vs Taiwan vocabulary and particles) and the script setting (simplified vs traditional characters). Output text in the chosen script.
+- Taiwan Mandarin rarely uses 儿化: never add 兒/儿 for Taiwan, and 哪 / 哪裡 are standard there.
 - Watch measure words, aspect markers (了 / 过 / 着), complements (的 / 得 / 地), word order and wrong characters from pinyin input (在 / 再).`,
 };
 
@@ -83,6 +84,8 @@ Decide, for the user's text only:
 
 Hard rules:
 - If nothing needs changing, the status is "ok". Never return "fix" with unchanged text.
+- If the only changes you would make are word choice, contractions or a more casual or natural phrasing of correct text, the status is "ok" with "stiff": true. A "fix" may contain only the changes needed to correct errors.
+- Keep every word that doesn't need correcting. Never drop or add content.
 - Never "correct" slang, abbreviations, laughter (ㅋㅋ, 哈哈), emoji or casual online spelling into standard forms. Only flag them if misused.
 - Make the smallest change that fixes the error. Keep the user's words, voice and casualness.
 - "tip" is one short English line (max 90 characters) explaining the main fix, quoting the changed words. No em dashes.
