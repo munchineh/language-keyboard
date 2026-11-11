@@ -99,7 +99,7 @@ enum ExplainLanguage: String, Codable, CaseIterable, Identifiable {
     }
 }
 
-/// Model keys the proxy accepts. See docs/PROJECT.md, section 3.
+/// Model keys the proxy accepts (MODELS in proxy/worker.js).
 enum CheckModel: String, Codable, CaseIterable, Identifiable {
     case haiku, haiku_think, sonnet, gemini_lite, gemini_flash
     var id: String { rawValue }
