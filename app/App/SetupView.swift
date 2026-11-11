@@ -9,23 +9,35 @@ struct SetupView: View {
         NavigationStack {
             List {
                 Section {
-                    step(1, "Open Settings", "Tap the button below. It opens this app's page in Settings.")
-                    step(2, "Turn on the keyboard", "Keyboards › Language Keyboard.")
-                    step(3, "Allow Full Access", "Needed for checks (they go through your proxy) and for saving settings from the keyboard. Nothing you type is stored.")
-                    step(4, "Switch to it", "In any app, hold the globe key and pick Language Keyboard.")
                     Button {
+                        // iOS doesn't let apps open the Keyboards screen directly; this opens
+                        // the app's own Settings page, which has the Keyboards switch on it.
                         if let url = URL(string: UIApplication.openSettingsURLString) {
                             UIApplication.shared.open(url)
                         }
                     } label: {
                         Label("Open Settings", systemImage: "gear")
+                            .font(.body.weight(.semibold))
+                            .frame(maxWidth: .infinity)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
+
+                    step(1, "Open Settings",
+                         "Tap the button above. Settings opens on this app's page.")
+                    step(2, "Turn on the keyboard",
+                         "Tap Keyboards, then switch on Language Keyboard. It joins the keyboards you already use.")
+                    step(3, "Turn on Allow Full Access",
+                         "On the same screen. This lets the keyboard check your sentences as you type. Your iPhone shows a general warning here, as it does for any keyboard that goes online. Your text is only used for the check and isn't saved.")
+                    step(4, "Start typing",
+                         "In any app, tap and hold the 🌐 key under the keyboard and pick Language Keyboard.")
                 } header: {
-                    Text("Add the keyboard")
+                    Text("Set up your keyboard")
                 }
 
                 Section {
-                    TextField("Type here to try it", text: $tryText, axis: .vertical)
+                    TextField("Type a sentence in Korean or Chinese", text: $tryText, axis: .vertical)
                         .lineLimit(3...6)
                         .focused($focused)
                     if !tryText.isEmpty {
@@ -34,7 +46,7 @@ struct SetupView: View {
                 } header: {
                     Text("Try it")
                 } footer: {
-                    Text("Pause for a second or end a sentence with . ? ! to see a check.")
+                    Text("Stop typing for a moment, or end a sentence with . ? or !, and the keyboard checks it. Suggested fixes appear just above the keys.")
                 }
             }
             .navigationTitle("Language Keyboard")
