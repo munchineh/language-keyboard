@@ -135,6 +135,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | Keyboard | `Keyboard/` | `KeyboardViewController` hosts SwiftUI. `KeyboardModel`: typing, pause check (punctuation = now, else after `pauseSeconds`), cancels on typing, Apply/rephrase replace the text only if it's unchanged. `KeyboardView`: bar, result card, keys (44pt, mockup colours, full-width touch areas, delete repeats). `SettingsPanel`: mockup's "Check settings" |
 | Companion app | `App/` | Tabs: Set up (steps + try-it field), Profiles (per language, edit/add/delete, speaker gender, Chinese region/script, "What I mean"), Checks (on/off, pause, model, proxy URL + token, test check with timing) |
 | Tests | `Tests/` | Hangul composition and backspace, diff highlighting, settings decoding. Also run on Linux with the Swift toolchain for quick checks |
+| Snapshots | `SnapshotTests/` | 8 states × light/dark, drawn in a chat frame. Light palette: white letter keys, grey function keys, #007aff blue, deeper orange (#c95c00) and green (#248a3d) for contrast on white. The grey platter behind the keys is only for snapshots; on a device the system draws the keyboard background |
 
 ### Where things live (no secret values here)
 
@@ -179,6 +180,8 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | D20 | Mockup's emoji key becomes the language toggle (shows the language it switches to) | Third-party keyboards can't open Apple's emoji keyboard; the system draws globe and mic below the keyboard on Face ID iPhones | Dead emoji key |
 | D21 | Proxy token in App Group storage for now | Personal use; simple | Shared Keychain (move there before going public) |
 | D22 | App default model Sonnet 5.5, changeable in the app | Matches the current leaning (most accurate in 3-run scoring) without a proxy change | Proxy default `haiku` |
+| D23 | Light and dark mode both supported; keyboard follows the host app's keyboard appearance, then the system setting, and updates live | Mockup was dark only; Apple's keyboard does both | Dark only |
+| D24 | CI renders every keyboard state in light and dark (`KeyboardSnapshots` test target) and uploads them as the `keyboard-snapshots` artifact | Lets Mancini and Claude review the UI from a phone with no Mac or Simulator | Waiting for Simulator checks |
 
 ---
 
@@ -275,6 +278,8 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Xcode on the Mac is at its first-launch licence screen; Simulator not installed yet | Waiting on Mancini |
 | 2026-11-11 | Mac shell has no GitHub credentials, so the Mac copy is a snapshot | Re-copy after changes, or sign in to GitHub in Xcode (Settings › Accounts) and pull there |
 | 2026-11-11 | App icon is a placeholder (한 key with an orange underline) | Replace before TestFlight if wanted |
+| 2026-11-11 | Snapshot review: correction tip was cut off after one line; "Their gender" column squeezed to "T" | Fixed (text wraps, gender column 112pt) |
+| 2026-11-11 | Settings panel shows down to "They are / Their gender"; the rest (Tone, What I mean) needs a scroll. Mockup panel is taller | Decide: keep scroll, or let the panel grow taller than the keys |
 | 2026-11-11 | `gh` CLI token in the cloud session is invalid | Use plain `curl` to `api.github.com` (with `Content-Type: application/json` for POSTs): reading runs and opening PRs both work |
 
 ---
@@ -294,4 +299,5 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Research: Siri AI Developer Preview (iOS 27.3) and Foundation Models; 3 integration proposals saved in docs/research |
 | 2026-11-11 | Mac setup started remotely: Xcode download from App Store; folders granted |
 | 2026-11-11 | Xcode installed; Apple Developer Program enrolled; ~12 GB freed on the Mac |
+| 2026-11-11 | Light and dark mode: tuned light palette, live appearance updates, CI snapshots of 8 states in both modes |
 | 2026-11-11 | Chat B: iOS app skeleton in `app/` (XcodeGen, companion app, keyboard extension to the mockup, Hangul composer, proxy client, tests) and `.github/workflows/ios.yml`. CI green on `macos-26`. Snapshot copied to `~/Projects/language-keyboard` on the Mac. Branch `ios-app` |
