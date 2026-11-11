@@ -39,6 +39,7 @@ final class KeyboardViewController: UIInputViewController {
         super.viewWillAppear(animated)
         model.reload()
         updateAppearance()
+        if hasFullAccess { SettingsStore.shared.markKeyboardSeenWithFullAccess() }
     }
 
     override func viewWillLayoutSubviews() {

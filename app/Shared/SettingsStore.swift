@@ -17,6 +17,7 @@ final class SettingsStore {
         static let proxyURL = "proxy.url"
         // Personal use for now. Move to a shared Keychain item before going public.
         static let proxyToken = "proxy.token"
+        static let keyboardSeen = "keyboard.seenWithFullAccess"
     }
 
     let defaults: UserDefaults
@@ -44,6 +45,16 @@ final class SettingsStore {
             return value.isEmpty ? AppGroup.defaultProxyURL : value
         }
         set { defaults.set(newValue, forKey: Key.proxyURL) }
+    }
+
+    /// The keyboard calls this when it opens with Full Access (it can only write
+    /// to the App Group then), so the app can tick off the setup steps.
+    func markKeyboardSeenWithFullAccess() {
+        defaults.set(Date(), forKey: Key.keyboardSeen)
+    }
+
+    var keyboardSeenWithFullAccess: Bool {
+        defaults.object(forKey: Key.keyboardSeen) != nil
     }
 
     var proxyToken: String {
