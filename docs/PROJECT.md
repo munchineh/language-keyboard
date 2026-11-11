@@ -161,6 +161,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | M3 Learning mode | Long-press dictionary panel, offline dictionaries + LLM note, study list | ~1–2 weeks | Not started |
 | M4 Anki | Deck export and/or AnkiMobile add, ties into his card pipeline | ~1 week | Not started |
 | M5 More languages | English, German packs | 2–4 days each | Later |
+| M2.5 Apple AI | 1-day device test: can the keyboard call Apple's on-device model (Foundation Models), with and without Full Access? Then a Siri study loop (App Shortcuts + Spotlight now, Siri AI tool intents when the Developer Preview reaches the App Store, spring 2027). See `docs/research/Siri AI keyboard integration.md` | 1 day test, then 1.5–2 weeks | Not started |
 | M6 Public | Sign in with Apple, subscriptions, rate limits, privacy policy, works without Full Access | TBD | Later |
 
 Calendar time will be longer than estimates (full-time classes).
@@ -234,3 +235,4 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | v3 deployed via GitHub; all 5 models working; blind test run and published for judging |
 | 2026-11-11 | Proxy 3.1: added gemini_lite31 and gemini_flash36 for speed comparison |
 | 2026-11-11 | Proxy 3.2 prompt (chosen speech level is deliberate, honorific subjects, style-only edits are "stiff", Taiwan 儿化, keep content). Added `blind-test/score.py` (automatic scoring vs expected answers, multiple runs) |
+| 2026-11-11 | Research: Siri AI Developer Preview (iOS 27.3) and Foundation Models; 3 integration proposals saved in docs/research |
