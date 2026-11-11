@@ -3,18 +3,19 @@ import SwiftUI
 /// Two-tone icons: the main shape in full colour, the extra information in a
 /// lighter shade (after the line-icon style Mancini shared, 2026-11-11).
 
-/// Settings sliders (from the mockup's SVG, 24pt grid), stroked with round caps.
+/// Settings sliders on a 24pt grid (based on the mockup's SVG, with the two
+/// sliders 6pt apart instead of 10 so the icon reads as one shape).
 struct SlidersShape: Shape {
     func path(in rect: CGRect) -> Path {
         let s = min(rect.width, rect.height) / 24
         func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: rect.minX + x * s, y: rect.minY + y * s) }
         var path = Path()
-        path.move(to: p(4, 7)); path.addLine(to: p(13, 7))
-        path.move(to: p(19, 7)); path.addLine(to: p(20, 7))
-        path.addEllipse(in: CGRect(x: rect.minX + (16 - 2.4) * s, y: rect.minY + (7 - 2.4) * s, width: 4.8 * s, height: 4.8 * s))
-        path.move(to: p(4, 17)); path.addLine(to: p(7, 17))
-        path.move(to: p(13, 17)); path.addLine(to: p(20, 17))
-        path.addEllipse(in: CGRect(x: rect.minX + (10 - 2.4) * s, y: rect.minY + (17 - 2.4) * s, width: 4.8 * s, height: 4.8 * s))
+        path.move(to: p(4, 9)); path.addLine(to: p(13, 9))
+        path.move(to: p(19, 9)); path.addLine(to: p(20, 9))
+        path.addEllipse(in: CGRect(x: rect.minX + (16 - 2.4) * s, y: rect.minY + (9 - 2.4) * s, width: 4.8 * s, height: 4.8 * s))
+        path.move(to: p(4, 15)); path.addLine(to: p(7, 15))
+        path.move(to: p(13, 15)); path.addLine(to: p(20, 15))
+        path.addEllipse(in: CGRect(x: rect.minX + (10 - 2.4) * s, y: rect.minY + (15 - 2.4) * s, width: 4.8 * s, height: 4.8 * s))
         return path
     }
 }
@@ -32,17 +33,17 @@ struct SettingsGlyph: View {
     var body: some View {
         Canvas { ctx, canvas in
             let w = canvas.width
-            let markCenter = CGPoint(x: w * 0.78, y: w * 0.78)
-            let markFont = Font.system(size: w * 0.38, weight: .bold)
+            let markCenter = CGPoint(x: w * 0.73, y: w * 0.72)
+            let markFont = Font.system(size: w * 0.52, weight: .bold)
 
             ctx.drawLayer { layer in
                 // Sliders fill most of the square, nudged up-left to make room for the mark.
-                let slidersRect = CGRect(x: -w * 0.08, y: -w * 0.06, width: w * 0.92, height: w * 0.92)
+                let slidersRect = CGRect(x: -w * 0.12, y: -w * 0.10, width: w * 0.92, height: w * 0.92)
                 layer.stroke(SlidersShape().path(in: slidersRect), with: .color(primary),
-                             style: StrokeStyle(lineWidth: w * 0.062, lineCap: .round, lineJoin: .round))
+                             style: StrokeStyle(lineWidth: w * 0.064, lineCap: .round, lineJoin: .round))
                 // Knock out a gap around the mark.
                 layer.blendMode = .destinationOut
-                let r = w * 0.26
+                let r = w * 0.31
                 layer.fill(Path(ellipseIn: CGRect(x: markCenter.x - r, y: markCenter.y - r, width: r * 2, height: r * 2)),
                            with: .color(.black))
             }
