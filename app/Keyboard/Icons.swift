@@ -20,36 +20,54 @@ struct SlidersShape: Shape {
     }
 }
 
-/// Settings icon: the sliders in the main tone, with the language mark (한 / 中)
-/// in the lighter tone overlapping the bottom-right corner diagonally. The sliders
-/// are knocked out around the mark so the two never touch. The mark never
-/// changes colour; check status lives in the suggestion bar instead.
+/// Solid gear with eight soft teeth (radius eases between inner and outer).
+struct GearShape: Shape {
+    var teeth = 8
+    var outer: CGFloat = 0.48
+    var inner: CGFloat = 0.385
+
+    func path(in rect: CGRect) -> Path {
+        let size = min(rect.width, rect.height)
+        let c = CGPoint(x: rect.midX, y: rect.midY)
+        func ease(_ x: CGFloat, _ a: CGFloat, _ b: CGFloat) -> CGFloat {
+            if x <= a { return 0 }
+            if x >= b { return 1 }
+            let u = (x - a) / (b - a)
+            return u * u * (3 - 2 * u)
+        }
+        var path = Path()
+        let steps = 360
+        for k in 0...steps {
+            let t = CGFloat(k) / CGFloat(steps) * 2 * .pi
+            let phase = (t * CGFloat(teeth) / (2 * .pi)).truncatingRemainder(dividingBy: 1)
+            let f = min(ease(phase, 0.04, 0.16), 1 - ease(phase, 0.44, 0.56))
+            let r = size * (inner + (outer - inner) * f)
+            let a = t - .pi / 2 - 2 * .pi / CGFloat(teeth) * 0.30
+            let p = CGPoint(x: c.x + r * cos(a), y: c.y + r * sin(a))
+            if k == 0 { path.move(to: p) } else { path.addLine(to: p) }
+        }
+        path.closeSubpath()
+        return path
+    }
+}
+
+/// Settings icon: a solid gear with the language mark (한 / 中) cut out of
+/// its centre as negative space. It never changes colour; check status lives
+/// in the suggestion bar.
 struct SettingsGlyph: View {
     let badge: String
-    let primary: Color
-    let secondary: Color
-    var size: CGFloat = 28
+    let color: Color
+    var size: CGFloat = 26
 
     var body: some View {
         Canvas { ctx, canvas in
             let w = canvas.width
-            let markCenter = CGPoint(x: w * 0.73, y: w * 0.72)
-            let markFont = Font.system(size: w * 0.52, weight: .bold)
-
             ctx.drawLayer { layer in
-                // Sliders fill most of the square, nudged up-left to make room for the mark.
-                let slidersRect = CGRect(x: -w * 0.12, y: -w * 0.10, width: w * 0.92, height: w * 0.92)
-                layer.stroke(SlidersShape().path(in: slidersRect), with: .color(primary),
-                             style: StrokeStyle(lineWidth: w * 0.064, lineCap: .round, lineJoin: .round))
-                // Knock out a gap around the mark.
+                layer.fill(GearShape().path(in: CGRect(origin: .zero, size: canvas)), with: .color(color))
                 layer.blendMode = .destinationOut
-                let r = w * 0.31
-                layer.fill(Path(ellipseIn: CGRect(x: markCenter.x - r, y: markCenter.y - r, width: r * 2, height: r * 2)),
-                           with: .color(.black))
+                let mark = layer.resolve(Text(badge).font(.system(size: w * 0.44, weight: .bold)))
+                layer.draw(mark, at: CGPoint(x: w / 2, y: w / 2 + w * 0.005), anchor: .center)
             }
-            var mark = ctx.resolve(Text(badge).font(markFont))
-            mark.shading = .color(secondary)
-            ctx.draw(mark, at: markCenter, anchor: .center)
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)

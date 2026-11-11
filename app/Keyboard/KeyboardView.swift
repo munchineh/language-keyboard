@@ -49,8 +49,7 @@ struct SuggestionBar: View {
     var body: some View {
         HStack(spacing: 0) {
             Button { model.openSettings() } label: {
-                SettingsGlyph(badge: model.language.badge, primary: theme.text.opacity(0.85),
-                              secondary: theme.iconSecondary)
+                SettingsGlyph(badge: model.language.badge, color: theme.text.opacity(0.85))
                     .frame(width: 56, height: 40)
                     .contentShape(Rectangle())
             }
