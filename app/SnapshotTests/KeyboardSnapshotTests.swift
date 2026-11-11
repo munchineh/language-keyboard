@@ -65,6 +65,14 @@ final class KeyboardSnapshotTests: XCTestCase {
         Scenario(name: "12-numbers", typed: "3시에", reply: "몇 시에 만나?") {
             $0.page = .numbers
         },
+        Scenario(name: "13-full-access-off", typed: "안녕히", reply: "잘 가!") {
+            $0.fullAccessOverride = false
+            $0.check = .needsFullAccess
+        },
+        Scenario(name: "14-settings-full-access-off", typed: "", reply: "이번 주말에 뭐 해?") {
+            $0.fullAccessOverride = false
+            $0.openSettings()
+        },
     ] }
 
     func testRenderStates() throws {

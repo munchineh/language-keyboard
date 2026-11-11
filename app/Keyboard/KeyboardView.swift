@@ -49,8 +49,8 @@ struct SuggestionBar: View {
     var body: some View {
         HStack(spacing: 0) {
             Button { model.openSettings() } label: {
-                SettingsGlyph(badge: model.language.badge, color: theme.text.opacity(0.85))
-                    .frame(width: 56, height: 40)
+                SettingsGlyph(badge: model.language.badge, color: theme.text.opacity(0.85), size: 22)
+                    .frame(width: 42, height: 40)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -210,6 +210,10 @@ struct ResultCard: View {
                 .font(.system(size: 14))
                 .foregroundStyle(theme.warning)
                 .lineLimit(2)
+        case .needsFullAccess:
+            FullAccessLink(theme: theme, text: "Turn on Full Access to check your writing") {
+                model.openFullAccessSettings()
+            }
         default:
             EmptyView()
         }

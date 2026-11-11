@@ -12,7 +12,27 @@ struct SettingsPanel: View {
     private var context: CheckContext { draft.context(for: language) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
+        // Scrolls only if the rows don't fit (e.g. with the Full Access line),
+        // so nothing is ever clipped at the top or bottom.
+        ScrollView(.vertical, showsIndicators: false) {
+            rows
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .pickerStyle(.segmented)
+        .labelsHidden()
+    }
+
+    private var rows: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if !model.hasFullAccess {
+                FullAccessLink(theme: theme, text: "Full Access is off: checks paused, settings not saved", size: 13) {
+                    model.openFullAccessSettings()
+                }
+                .frame(height: 22)
+            }
+
             // Done sits on the first row so every setting fits in the keyboard's height.
             row("Language") {
                 HStack(spacing: 10) {
@@ -24,7 +44,7 @@ struct SettingsPanel: View {
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 16)
-                            .frame(height: 32)
+                            .frame(height: 30)
                             .background(Capsule().fill(theme.accent))
                     }
                     .buttonStyle(.plain)
@@ -72,34 +92,21 @@ struct SettingsPanel: View {
                 }
             }
             row("What I mean") { field(.note, value: context.note) }
-
-            Spacer(minLength: 0)
-
-            if !model.hasFullAccess {
-                Text("Full Access is off: checks are paused and settings can't be saved.")
-                    .font(.system(size: 12))
-                    .foregroundStyle(theme.warning)
-            }
         }
-        .pickerStyle(.segmented)
-        .labelsHidden()
-        .padding(.horizontal, 14)
-        .padding(.top, 10)
-        .padding(.bottom, 4)
     }
 
     private func row<Content: View>(_ title: String, @ViewBuilder _ content: () -> Content) -> some View {
         HStack(spacing: 8) {
             Text(title)
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(theme.secondaryText)
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
-                .frame(width: 78, alignment: .leading)
+                .frame(width: 70, alignment: .leading)
             content()
                 .frame(maxWidth: .infinity)
         }
-        .frame(height: 32)
+        .frame(height: 31)
     }
 
     /// Looks like a text field; tapping it types into it with the keyboard's own keys.
@@ -118,7 +125,7 @@ struct SettingsPanel: View {
                 }
             }
             .padding(.horizontal, 10)
-            .frame(height: 32)
+            .frame(height: 31)
             .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(theme.segmentTrack))
             .contentShape(Rectangle())
         }

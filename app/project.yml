@@ -75,6 +75,11 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: Language Keyboard
+        # languagekeyboard://full-access: the keyboard opens the app, which opens Settings.
+        CFBundleURLTypes:
+          - CFBundleURLName: com.mancinitan.LanguageKeyboard
+            CFBundleURLSchemes:
+              - languagekeyboard
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false

@@ -3,18 +3,35 @@ import SwiftUI
 @main
 struct LanguageKeyboardApp: App {
     @StateObject private var settings = AppSettings()
+    @State private var tab = Tab.setup
+
+    enum Tab { case setup, writing, checks }
 
     var body: some Scene {
         WindowGroup {
-            TabView {
+            TabView(selection: $tab) {
                 SetupView()
                     .tabItem { Label("Set up", systemImage: "keyboard") }
+                    .tag(Tab.setup)
                 WritingView()
                     .tabItem { Label("Writing", systemImage: "text.bubble") }
+                    .tag(Tab.writing)
                 ConnectionView()
                     .tabItem { Label("Checks", systemImage: "checkmark.bubble") }
+                    .tag(Tab.checks)
             }
             .environmentObject(settings)
+            .onOpenURL(perform: handle)
+        }
+    }
+
+    /// From the keyboard's "Turn on Full Access" link: show Set up, then go
+    /// straight to this app's page in Settings (Keyboards › Allow Full Access).
+    private func handle(_ url: URL) {
+        guard url.scheme == "languagekeyboard" else { return }
+        tab = .setup
+        if url.host == "full-access", let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(settingsURL)
         }
     }
 }

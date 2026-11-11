@@ -13,6 +13,8 @@ enum CheckState: Equatable {
     /// The rewrite in the style chosen in settings (one at a time, to keep the card short).
     case rephrased(original: String, option: RephraseOption)
     case message(String)
+    /// Checks need Full Access; the card links to the app, which opens Settings.
+    case needsFullAccess
 
     /// Something the card shows.
     var hasCard: Bool {
@@ -96,6 +98,13 @@ final class KeyboardModel: ObservableObject {
 
     private var proxy: UITextDocumentProxy? { controller?.textDocumentProxy }
     var language: KeyboardLanguage { settings.language }
+    /// Opens the companion app, which jumps straight to its Settings page
+    /// (Keyboards › Allow Full Access). Keyboards can't open Settings directly.
+    func openFullAccessSettings() {
+        guard let url = URL(string: "languagekeyboard://full-access") else { return }
+        controller?.openContainingApp(url)
+    }
+
     var hasFullAccess: Bool { fullAccessOverride ?? controller?.hasFullAccess ?? false }
 
     /// Which letters to show right now.
@@ -398,7 +407,7 @@ final class KeyboardModel: ObservableObject {
         // Never check half a syllable (lone ㄱ or ㅏ) or unconverted pinyin.
         guard !composer.isIncomplete, pinyin.isEmpty, let current = currentText() else { return }
         guard hasFullAccess else {
-            check = .message("Turn on Full Access to check your writing")
+            check = .needsFullAccess
             return
         }
         checkedRaw = current.raw

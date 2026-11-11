@@ -94,3 +94,29 @@ struct ArrowButton: View {
         .accessibilityLabel(label)
     }
 }
+
+/// Orange line with a chevron that opens the app's Settings page.
+struct FullAccessLink: View {
+    let theme: KeyboardTheme
+    let text: String
+    var size: CGFloat = 14
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Text(text)
+                    .font(.system(size: size))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: size - 2, weight: .semibold))
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(theme.warning)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Opens Settings to turn on Full Access")
+    }
+}

@@ -53,6 +53,23 @@ final class KeyboardViewController: UIInputViewController {
         model.textDidChange()
     }
 
+    /// Keyboard extensions have no UIApplication.shared. The usual workaround:
+    /// walk the responder chain to the app object and call
+    /// openURL:options:completionHandler: through the Objective-C runtime.
+    func openContainingApp(_ url: URL) {
+        let selector = NSSelectorFromString("openURL:options:completionHandler:")
+        var responder: UIResponder? = self
+        while let current = responder {
+            if current.responds(to: selector), current is UIApplication {
+                typealias OpenURL = @convention(c) (AnyObject, Selector, NSURL, NSDictionary, UnsafeRawPointer?) -> Void
+                let open = unsafeBitCast(current.method(for: selector), to: OpenURL.self)
+                open(current, selector, url as NSURL, NSDictionary(), nil)
+                return
+            }
+            responder = current.next
+        }
+    }
+
     private func updateAppearance() {
         let dark: Bool
         switch textDocumentProxy.keyboardAppearance ?? .default {
