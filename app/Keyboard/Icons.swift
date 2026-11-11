@@ -33,10 +33,10 @@ struct SettingsGlyph: View {
         HStack(alignment: .lastTextBaseline, spacing: 2) {
             SlidersShape()
                 .stroke(primary, style: StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round))
-                .frame(width: 21, height: 21)
-                .alignmentGuide(.lastTextBaseline) { d in d[.bottom] - 3 }
+                .frame(width: 24, height: 24)
+                .alignmentGuide(.lastTextBaseline) { d in d[.bottom] - 4 }
             Text(badge)
-                .font(.system(size: 12, weight: .semibold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(secondary)
                 .opacity(pulsing && dim ? 0.35 : 1)
         }

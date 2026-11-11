@@ -363,8 +363,7 @@ struct KeyView: View {
                 .font(.system(size: 17))
         case .emoji:
             Image(systemName: "face.smiling")
-                .symbolRenderingMode(.hierarchical)
-                .font(.system(size: 21))
+                .font(.system(size: 21, weight: .light))
                 .accessibilityLabel("Emoji")
         case .fieldLayoutToggle:
             Text(model.fieldLatin ? "한" : "ABC").font(.system(size: 16))

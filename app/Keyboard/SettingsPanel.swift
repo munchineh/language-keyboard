@@ -53,7 +53,7 @@ struct SettingsPanel: View {
                                 Text(g.short).tag(g).accessibilityLabel(g.label)
                             }
                         }
-                        .frame(width: 104)
+                        .frame(width: 84)
                     }
                 }
             } else {
@@ -94,7 +94,7 @@ struct SettingsPanel: View {
                 .foregroundStyle(theme.secondaryText)
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
-                .frame(width: 84, alignment: .leading)
+                .frame(width: 78, alignment: .leading)
             content()
                 .frame(maxWidth: .infinity)
         }
