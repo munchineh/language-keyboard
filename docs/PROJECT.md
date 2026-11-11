@@ -19,20 +19,20 @@ Chat B (iOS project + CI) ended 2026-11-11. The app skeleton builds and tests gr
 
 | Item | State |
 |---|---|
-| Next task | **1.** Mancini at the Mac once: open Xcode, accept the licence, install the iOS component (asks for the Mac password), sign in with his Apple ID. **2.** Claude: Simulator check (Finder › `~/Projects/language-keyboard/app/LanguageKeyboard.xcodeproj`, scheme LanguageKeyboard, Run). **3.** TestFlight: Team ID into `project.yml`, register bundle IDs + App Group, App Store Connect API key as GitHub secrets, add an upload job. **4.** Chat C: RIME for Chinese |
+| Next task | **1.** Mancini at the Mac once: open Xcode, accept the licence, install the iOS component, sign in to Xcode. **2.** Claude: Simulator check (open `app/LanguageKeyboard.xcodeproj` from the Mac copy, scheme LanguageKeyboard, Run). **3.** TestFlight: Team ID into `project.yml`, register bundle IDs + App Group, App Store Connect API key as GitHub secrets, add an upload job. **4.** Chat C: RIME for Chinese |
 | iOS app | `app/` (see section 3, "iOS app"). **MVP built 2026-11-11** to Mancini's feedback: two-tone icons, card above the bar (blue highlights, reason in the chosen language, blue arrow), bar = settings icon + suggestions, long-press return applies, emoji page, settings panel with Done to save and in-keyboard text fields, Korean word suggestions, pinyin input for Chinese (simplified = mainland, traditional = Taiwan words). 18 tests + 24 snapshots |
 | CI | `.github/workflows/ios.yml` on `macos-26` (Xcode 26.6): XcodeGen, Simulator build, unsigned device build, tests, then commits the generated `.xcodeproj`, Info.plists and entitlements back with `[skip ci]`. ~4 min per run. Claude can read run results through `api.github.com` from the cloud session |
-| Mac access | Mac "mancinis-laptop-local" via the Claude desktop app. `~/Projects` connected 2026-11-11. Computer use granted for Xcode (click-only) and Finder, background mode. **Xcode is still at its first-launch licence screen** (Claude didn't accept it). Simulator isn't installed until the iOS component is. The Mac shell (`device_bash`) is a Linux VM with no GitHub credentials, so code reaches the Mac as a snapshot (tarball copied in, then extracted) |
-| Mac copy | `~/Projects/language-keyboard` = snapshot of `ios-app` at commit `b508a82`. Re-copy after changes. `~/Projects/_to_delete/language-keyboard.tar.gz` can be deleted |
-| Waiting on Mancini | Xcode first launch + Apple ID (above). Team ID from developer.apple.com › Account › Membership. Blind-test picks |
+| Mac access | The Mac via the Claude desktop app, with the projects folder connected (2026-11-11). Computer use granted for Xcode (click-only) and Finder, background mode. **Xcode is still at its first-launch licence screen** (Claude didn't accept it). Simulator isn't installed until the iOS component is. The Mac shell (`device_bash`) is a Linux VM with no GitHub credentials, so code reaches the Mac as a snapshot (tarball copied in, then extracted) |
+| Mac copy | `language-keyboard` in the Mac's projects folder = snapshot of `ios-app`. Re-copy after changes. Old tarballs in `_to_delete/` can be deleted |
+| Waiting on Mancini | Xcode first launch + Xcode sign-in (above). Team ID from developer.apple.com › Account › Membership. Blind-test picks |
 | Model default | App default **Sonnet 5.5** (Checks tab, changeable). Proxy default is still `haiku`. Final call after blind test |
 | Proxy change pending | `proxy/worker.js` v3.3 adds `explain` (language of tips/notes). Cloudflare deploys from `main`, so it goes live when PR #1 is merged; until then tips stay in English |
 | Open items | Rotate `APP_TOKEN` before daily use (then paste it into the app's Checks tab); blind-test judging page; Apple on-device model test (M2.5); Siri AI proposals in `docs/research/` |
 
 ---|---|
 | Next task | Create the Xcode project in this repo (`app/`): companion app + keyboard extension, shared App Group, built around the mockup. Then open it on the Mac by clicking in Xcode and build in the iPhone Simulator |
-| Mac access | Mac "mancinis-laptop-local" via the Claude desktop app. Folders: `~/Projects`, `~/Downloads`, Desktop, Documents, Movies, Pictures. Computer use: background mode preferred. **Terminal and Xcode are click-only (no typing)**, so generate the project files in the repo (e.g. a hand-written `.xcodeproj` or a generator run elsewhere) and copy them to `~/Projects/language-keyboard`. The Mac shell (`device_bash`) is a Linux VM: it can't run Xcode |
-| Waiting on Mancini | First Xcode launch (component install, Mac password) and signing in to Xcode with his Apple ID. Apple Developer Program enrolled (Individual) |
+| Mac access | The Mac via the Claude desktop app, with the projects folder connected. Computer use: background mode preferred. **Terminal and Xcode are click-only (no typing)**, so generate the project files in the repo (e.g. a hand-written `.xcodeproj` or a generator run elsewhere) and copy them to `~/Projects/language-keyboard`. The Mac shell (`device_bash`) is a Linux VM: it can't run Xcode |
+| Waiting on Mancini | First Xcode launch (component install) and signing in to Xcode. Apple Developer Program enrolled |
 | Model default | Leaning **Sonnet 5.5** for both languages (most accurate in 3-run scoring, ~1.5s). Not yet confirmed; Mancini's blind-test picks pending |
 | UI path | Swift directly (web prototype skipped) |
 | Build without the Mac (planned) | Mancini won't be at the Mac for a while. Plan: XcodeGen spec (`app/project.yml`) in the repo; **GitHub Actions macOS runner** builds on every push; once the Apple Developer membership is active, an App Store Connect API key (stored as GitHub secrets) lets the workflow sign and upload to **TestFlight**, and Mancini installs from the TestFlight app on his iPhone. The Mac is optional: Simulator checks via computer use (Finder opens the project, Xcode Run is a click; Simulator is full-access). Simulator builds don't need an Apple ID sign-in |
@@ -94,7 +94,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | Predictions | On-device word lists + personal history | Korean data: chat/subtitle-style frequency lists; NIKL 모두의 말뭉치 has a messenger corpus (application + redistribution limits) |
 | Dictionaries | 한국어기초사전 (CC BY-SA 2.0 KR), CC-CEDICT (CC BY-SA), Wiktionary data | Attribution page needed if public |
 | Proxy | Cloudflare Worker `keyboard-proxy` at `https://keyboard-proxy.mancini-tan.workers.dev` | Free plan: 100k requests/day, waiting on the API doesn't count toward CPU time |
-| LLM | Claude API via Console org linked to his **Ultra** plan ($200/month API credits); Gemini API via his billed Google account | Model chosen per request; final choice after the blind test |
+| LLM | Claude API and Gemini API, keys held only by the proxy | Model chosen per request; final choice after the blind test |
 
 ### Proxy API (v3)
 
@@ -145,9 +145,8 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 |---|---|
 | Code + this doc | GitHub repo `language-keyboard` (**public** since 11 Nov 2026): `proxy/`, `docs/`, `blind-test/`, `app/`. Cloudflare deploys `proxy/` on every push to `main`. Never commit keys, tokens or personal details; see "Security notes" in section 9 |
 | `ANTHROPIC_API_KEY` | Cloudflare › keyboard-proxy › Settings › Variables and Secrets (Secret) |
-| `GEMINI_API_KEY` | Same place. Key from Google AI Studio, on the **billed** project (free tier data may be used by Google and read by reviewers) |
-| `APP_TOKEN` | Same place, plus Mancini's password manager ("keyboard-proxy token"). **Rotate before daily use** (an earlier one appeared in a screenshot) |
-| Claude API credits | Claude Console org (Individual), linked via claude.ai (web only) › Settings › Billing › API credits |
+| `GEMINI_API_KEY` | Same place. Key from Google AI Studio, on a paid project (free-tier data may be used by Google and read by reviewers) |
+| `APP_TOKEN` | Same place, plus a private copy kept by the owner. **Rotate before daily use** (an earlier one appeared in a screenshot) |
 | Worker code | `proxy/worker.js` (v3) + `proxy/wrangler.jsonc` in the repo |
 | iOS code | `app/` in the repo. Edit `app/project.yml`, never the `.xcodeproj` (CI regenerates it) |
 | Proxy token on the phone | Pasted into the companion app (Checks tab), stored in the App Group. Not in the repo |
@@ -166,13 +165,13 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | D4 | Corrections and rephrasing are separate | Correct-but-formal shouldn't be treated as an error; keeps checks fast | One combined "rewrite" |
 | D5 | Never "correct" slang into standard forms; slang glossary in the prompt | He wants online-native texting; no LLM knows slang after its cutoff (June 2026 for Claude) | Live web search on every check (too slow) |
 | D6 | Server proxy from day one (Cloudflare Worker) | Keeps the API key off the phone, lets models/prompts/glossary change without app updates, enables rate limits and subscriptions later | Key inside the app (extractable) |
-| D7 | Claude and Gemini both available through the proxy | Claude paid from Ultra credits; Gemini already billed. Pick per language on blind-test results | Locking into one provider now |
+| D7 | Claude and Gemini both available through the proxy | Both already set up for API use. Pick per language on blind-test results | Locking into one provider now |
 | D8 | Haiku by default, Sonnet for rephrase/learning/deep check, final call after blind test | Speed priority; Haiku measured ~1.1–1.2s model time | Opus/Fable (too slow for a ~2s target) |
 | D9 | Korean and Chinese first | His main daily languages | All four at once |
 | D10 | Language packs architecture | Adding a language later becomes data work (2–4 days for Latin-script languages) | Hard-coded languages |
 | D11 | Liquid Glass look, close not identical | Exact match isn't possible from a keyboard extension (separate process, private tuning, memory limits) | Pixel-perfect clone |
 | D12 | Personal use first, planned for public | Keeps V1 small; avoids a rebuild later | Public V1 |
-| D13 | Keep the early check start (send at ~0.6s pause) | Cancelled calls still cost, but credits are covered by Ultra | Waiting the full pause |
+| D13 | Keep the early check start (send at ~0.6s pause) | Cancelled calls still cost, but the cost is fine for personal use | Waiting the full pause |
 | D14 | Rephrase default: only when noticeably stiff (pending confirmation) | Avoids nagging | Always / off |
 | D15 | Code and this doc live in a GitHub repo with Cloudflare auto-deploy | He builds away from his Mac; any future chat or Claude Code session can read and update the doc and ship proxy changes | Pasting code into the dashboard; API token deploys |
 | D16 | Proxy guards against bad model output (no-change "fix" becomes "ok") | Haiku returned unchanged "fixes" 3 times in the first run | Trusting raw model output |
@@ -297,13 +296,13 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Keyboard height grows when the correction card appears (`allowsSelfSizing`); not yet seen on screen | Check in Simulator |
 | 2026-11-11 | Xcode on the Mac is at its first-launch licence screen; Simulator not installed yet | Waiting on Mancini |
 | 2026-11-11 | Mac shell has no GitHub credentials, so the Mac copy is a snapshot | Re-copy after changes, or sign in to GitHub in Xcode (Settings › Accounts) and pull there |
-| 2026-11-11 | Copying to the Mac: re-sending a file under the same name kept the old copy. Use a new file name each time (e.g. `lk-<commit>.tar.gz` in `~/Projects/_to_delete/`), extract in the Mac shell, then `cp -R` over `~/Projects/language-keyboard` | Workaround in use |
+| 2026-11-11 | Copying to the Mac: re-sending a file under the same name kept the old copy. Use a new file name each time (e.g. `lk-<commit>.tar.gz` in `_to_delete/` in the projects folder), extract in the Mac shell, then `cp -R` over the Mac copy | Workaround in use |
 | 2026-11-11 | Computer use can't operate Xcode's Open panel (separate system process) or Finder while Mancini is in a full-screen app; opening the project needs one double-click from him | Ask him; afterwards Xcode lists it under recent projects |
 | 2026-11-11 | iOS has no public way to open Settings › Keyboards directly (private `App-prefs:` links get apps rejected). The Setup button opens the app's own Settings page, which shows Keyboards › Language Keyboard and Allow Full Access | By design |
 | 2026-11-11 | Checks tab still uses technical words (proxy URL, app token, model). Fine for personal use; hide under "Advanced" before anyone else uses the app | Later |
 | 2026-11-11 | Setup check reads `AppleKeyboards` (undocumented but long-standing) with a fallback to the input modes; Full Access tick stays on even if Full Access is later turned off | Fine for personal use; recheck before App Store |
 | 2026-11-11 | GitHub Actions: macOS minutes count 10× on a private repo (1,860 of 2,000 used by 11 Nov) | Done: repo made public 11 Nov (Actions free for public repos). First commit's author email rewritten to the GitHub no-reply address beforehand; PR #1's timeline still links to pre-rewrite commits |
-| 2026-11-11 | Security audit (repo public): no keys or tokens in any of 80 file versions (detect-secrets + patterns); no address, phone or birthday. Open: (1) rotate `APP_TOKEN` (old one seen in a screenshot, proxy URL now public); (2) spend caps on Claude Console and Gemini; (3) old commit `582d728` with the Gmail author is still served by SHA (ask GitHub Support to purge); (4) proxy has no per-token rate limit; (5) doc mentions Claude Ultra, Gemini billing and the Mac's name | Waiting on Mancini for 1–3 |
+| 2026-11-11 | Security audit (repo public): no keys or tokens in any of 80 file versions (detect-secrets + patterns); no address, phone or birthday. Open: (1) rotate `APP_TOKEN` (old one seen in a screenshot, proxy URL now public); (2) spend caps on Claude Console and Gemini; (3) old commit `582d728` with the Gmail author is still served by SHA (ask GitHub Support to purge); (4) proxy has no per-token rate limit; (5) doc mentioned plan, billing and Mac details (removed 11 Nov; older versions remain in git history) | Waiting on Mancini for 1–3 |
 | 2026-11-11 | App icon is a placeholder (한 key with an orange underline) | Replace before TestFlight if wanted |
 | 2026-11-11 | Snapshot review: correction tip was cut off after one line; "Their gender" column squeezed to "T" | Fixed (text wraps, gender column 112pt) |
 | 2026-11-11 | Settings panel shows down to "They are / Their gender"; the rest (Tone, What I mean) needs a scroll | Done: compact rows fit without scrolling (D29) |
@@ -316,7 +315,7 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | Date | Change |
 |---|---|
 | 2026-11-10 | Scoped the keyboard: full keyboard, RIME, pause check, profiles, learning mode, rephrase. Mockup made |
-| 2026-11-10 | Chose Claude (Ultra credits) over Gemini for now; Cloudflare Worker proxy; secrets set |
+| 2026-11-10 | Chose Claude over Gemini for now; Cloudflare Worker proxy; secrets set |
 | 2026-11-11 | Proxy v1 live; Korean check verified (선생님한테 줬어 → 선생님께 드렸어); latency measured |
 | 2026-11-11 | Blind test built (36 sentences); Haiku run complete; Sonnet bug found; proxy v2 written; this doc created |
 | 2026-11-11 | Proxy v3: Gemini added (3.5 Flash-Lite, 3.8 Flash), Haiku-with-thinking option, no-change guard, stricter prompt. Blind test upgraded to 5 models. Repo `munchineh/language-keyboard` created and connected to Cloudflare Builds (path `/proxy`, preview builds off). GEMINI_API_KEY added |
@@ -331,4 +330,4 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | One rewrite at a time (D35); long-press applies whatever the card shows; settings panel: Done moved onto the Language row so "Rewrite as" fits. Proxy still returns both options; asking for one would save time and tokens (later) |
 | 2026-11-11 | MVP to Mancini's feedback (D25–D34): two-tone icons, concentric card with blue highlights and arrow, suggestions bar, long-press return, emoji page, settings draft + Done, in-keyboard fields, Korean suggestions, pinyin input, explanation language. Proxy v3.3 (`explain`) waits for merge |
 | 2026-11-11 | Light and dark mode: tuned light palette, live appearance updates, CI snapshots of 8 states in both modes |
-| 2026-11-11 | Chat B: iOS app skeleton in `app/` (XcodeGen, companion app, keyboard extension to the mockup, Hangul composer, proxy client, tests) and `.github/workflows/ios.yml`. CI green on `macos-26`. Snapshot copied to `~/Projects/language-keyboard` on the Mac. Branch `ios-app` |
+| 2026-11-11 | Chat B: iOS app skeleton in `app/` (XcodeGen, companion app, keyboard extension to the mockup, Hangul composer, proxy client, tests) and `.github/workflows/ios.yml`. CI green on `macos-26`. Snapshot copied to the Mac. Branch `ios-app` |

@@ -34,7 +34,7 @@ struct ConnectionView: View {
                 } header: {
                     Text("Proxy")
                 } footer: {
-                    Text("The token is in your password manager as “keyboard-proxy token”.")
+                    Text("Paste the token you saved when you set up the proxy.")
                 }
 
                 Section {
