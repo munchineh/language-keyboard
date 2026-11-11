@@ -213,6 +213,8 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Smoke test: haiku_think passed 안 했어서 as ok, while haiku (thinking off), sonnet and both Geminis caught it | Watch in blind-test results |
 | 2026-11-11 | gemini_flash (3.8 Flash) averages 4.1s; LOW is its lowest thinking level | Likely too slow for the pause check regardless of quality |
 | 2026-11-11 | Speed-only rerun (36 sentences, one model at a time): gemini_lite median 0.80s / p90 0.96s · gemini_lite31 0.85s / 1.10s · haiku 0.96s / 1.23s · gemini_flash36 1.29s / 1.55s. The earlier 2.7s p90 for gemini_lite came from running 5 models at once | Fastest: Gemini 3.5 Flash-Lite. Quality decided by the blind test |
+| 2026-11-11 | Haiku vs Gemini 3.5 Flash-Lite, my read of the 36 answers: Haiku clearly better on 6 (follows the chosen speech level, keeps meaning, correct-but-stiff handled right), Flash-Lite better on 3 (all Chinese: 的/得, Taiwan 哪, a more natural Korean reason clause). Flash-Lite overrode the chosen 해요체/합쇼체 three times and once dropped 책을 | Leaning: Haiku for Korean, Flash-Lite worth considering for Chinese. Mancini's own picks still to come |
+| 2026-11-11 | Both models: missed 할머니가 왔어 → 오셨어; changed a chosen 해요체 to 반말 for a friend; put style edits into "fix" | Open: prompt should say the chosen speech level is intentional (only flag mixing or going below it), and add honorific-subject checks |
 | 2026-11-11 | Haiku missed: 안 했어서, 언니 from a male speaker, 왜냐하면 structure, 오에스티 → OST | Open: compare Sonnet and Haiku with thinking on |
 
 ---
