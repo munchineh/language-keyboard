@@ -3,7 +3,7 @@
 //   ANTHROPIC_API_KEY, GEMINI_API_KEY, APP_TOKEN
 // Privacy: this Worker never logs or stores the text it receives.
 
-const VERSION = "3.2";
+const VERSION = "3.4";
 const DEFAULT_MODEL = "haiku";
 const MAX_TEXT = 1000;      // characters per request
 const MAX_CONTEXT = 500;
@@ -42,6 +42,13 @@ const SLANG = {
 // ---------- prompts ----------
 
 const LANG_NAME = { ko: "Korean", zh: "Mandarin Chinese" };
+// Language for "tip" and "note" (set in the app). Corrected text stays in the checked language.
+const EXPLAIN_NAME = {
+  en: "English",
+  ko: "Korean (simple, polite 해요체)",
+  "zh-Hans": "Chinese, simplified characters",
+  "zh-Hant": "Chinese, traditional characters",
+};
 
 function profileLines(lang, p = {}) {
   const lines = [];
@@ -88,7 +95,7 @@ Hard rules:
 - Keep every word that doesn't need correcting. Never drop or add content.
 - Never "correct" slang, abbreviations, laughter (ㅋㅋ, 哈哈), emoji or casual online spelling into standard forms. Only flag them if misused.
 - Make the smallest change that fixes the error. Keep the user's words, voice and casualness.
-- "tip" is one short English line (max 90 characters) explaining the main fix, quoting the changed words. No em dashes.
+- "tip" is one short line (max 90 characters) in the explanation language given with the request, explaining the main fix and quoting the changed words. No em dashes.
 - If unsure whether something is wrong, choose "ok".
 
 ${LANG_RULES[lang]}
@@ -107,7 +114,7 @@ Give exactly two options:
 
 Rules:
 - Keep the meaning. Do not add new information.
-- "note" is one short English line (max 90 characters) naming the key changes, quoting the words. No em dashes.
+- "note" is one short line (max 90 characters) in the explanation language given with the request, naming the key changes and quoting the words. No em dashes.
 
 ${LANG_RULES[lang]}
 
@@ -122,7 +129,7 @@ const CHECK_SCHEMA = {
     status: { type: "string", enum: ["ok", "fix"] },
     stiff: { type: "boolean", description: "Correct but noticeably textbook-like for texting" },
     corrected: { type: "string", description: "Full corrected text, only when status is fix" },
-    tip: { type: "string", description: "One short English line, only when status is fix" },
+    tip: { type: "string", description: "One short line in the explanation language, only when status is fix" },
   },
   required: ["status", "stiff"],
 };
@@ -155,6 +162,30 @@ function json(body, status = 200, extra = {}) {
     status,
     headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...extra },
   });
+}
+
+// Rate limits (bindings in wrangler.jsonc). Limits count per Cloudflare
+// location and are approximate; provider spending caps are the hard backstop.
+// If a binding is missing or errors, the request is allowed (fail open) so a
+// config slip never breaks the keyboard.
+async function withinLimit(limiter, key) {
+  if (!limiter) return true;
+  try {
+    const { success } = await limiter.limit({ key });
+    return success;
+  } catch {
+    return true;
+  }
+}
+
+// Short hash so the raw token is never used as a limiter key.
+async function tokenKey(token) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  return [...new Uint8Array(digest).slice(0, 8)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function tooMany() {
+  return json({ error: "rate limited" }, 429, { "retry-after": "60" });
 }
 
 // Constant-time comparison so the token can't be guessed by timing.
@@ -273,11 +304,18 @@ export default {
       return json({ error: "not found" }, 404);
     }
 
+    // Per-IP limit first, so token guessing and junk traffic are capped too.
+    const ip = request.headers.get("cf-connecting-ip") || "unknown";
+    if (!(await withinLimit(env.IP_LIMITER, `ip:${ip}`))) return tooMany();
+
     const auth = request.headers.get("authorization") || "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
     if (!env.APP_TOKEN || !safeEqual(token, env.APP_TOKEN)) {
       return json({ error: "unauthorized" }, 401);
     }
+
+    // Per-token limit: one leaked token can't run up the API bill.
+    if (!(await withinLimit(env.TOKEN_LIMITER, `tok:${await tokenKey(token)}`))) return tooMany();
 
     let body;
     try {
@@ -286,7 +324,7 @@ export default {
       return json({ error: "invalid json" }, 400);
     }
 
-    const { lang, text, context = "", profile = {}, note = "" } = body || {};
+    const { lang, text, context = "", profile = {}, note = "", explain = "en" } = body || {};
     const modelKey = MODELS[body?.model] ? body.model : DEFAULT_MODEL;
     const m = MODELS[modelKey];
     if (!LANG_NAME[lang]) return json({ error: "lang must be ko or zh" }, 400);
@@ -301,6 +339,7 @@ export default {
       ? `Always answer by calling the ${toolName} tool.`
       : "Answer only with JSON matching the response schema.";
     const userContent = [
+      `Explanation language: ${EXPLAIN_NAME[explain] || EXPLAIN_NAME.en}`,
       `Profile:\n${profileLines(lang, profile)}`,
       context ? `Message being replied to:\n${context}` : "",
       note ? `What the user means: ${note}` : "",

@@ -4,7 +4,13 @@
   "main": "worker.js",
   "compatibility_date": "2026-10-01",
   // No request logging: the proxy handles private messages.
-  "observability": { "enabled": false }
+  "observability": { "enabled": false },
+  // Rate limits, counted per Cloudflare location (period must be 10 or 60 s).
+  // A person typing triggers a few checks a minute, so these only bite on abuse.
+  "ratelimits": [
+    { "name": "IP_LIMITER", "namespace_id": "4201", "simple": { "limit": 60, "period": 60 } },
+    { "name": "TOKEN_LIMITER", "namespace_id": "4202", "simple": { "limit": 30, "period": 60 } }
+  ]
   // Secrets (ANTHROPIC_API_KEY, GEMINI_API_KEY, APP_TOKEN) live only in the
   // Cloudflare dashboard and are never committed.
 }
