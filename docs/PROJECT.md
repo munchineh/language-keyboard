@@ -20,12 +20,13 @@ Chat B (iOS project + CI) ended 2026-11-11. The app skeleton builds and tests gr
 | Item | State |
 |---|---|
 | Next task | **1.** Mancini at the Mac once: open Xcode, accept the licence, install the iOS component (asks for the Mac password), sign in with his Apple ID. **2.** Claude: Simulator check (Finder › `~/Projects/language-keyboard/app/LanguageKeyboard.xcodeproj`, scheme LanguageKeyboard, Run). **3.** TestFlight: Team ID into `project.yml`, register bundle IDs + App Group, App Store Connect API key as GitHub secrets, add an upload job. **4.** Chat C: RIME for Chinese |
-| iOS app | `app/` (see section 3, "iOS app"). Companion app, keyboard extension, shared code, 13 unit tests. Korean typing works end to end in code (Hangul composition, pause check, Apply, rephrase); Chinese types pinyin letters until RIME |
+| iOS app | `app/` (see section 3, "iOS app"). **MVP built 2026-11-11** to Mancini's feedback: two-tone icons, card above the bar (blue highlights, reason in the chosen language, blue arrow), bar = settings icon + suggestions, long-press return applies, emoji page, settings panel with Done to save and in-keyboard text fields, Korean word suggestions, pinyin input for Chinese (simplified = mainland, traditional = Taiwan words). 18 tests + 24 snapshots |
 | CI | `.github/workflows/ios.yml` on `macos-26` (Xcode 26.6): XcodeGen, Simulator build, unsigned device build, tests, then commits the generated `.xcodeproj`, Info.plists and entitlements back with `[skip ci]`. ~4 min per run. Claude can read run results through `api.github.com` from the cloud session |
 | Mac access | Mac "mancinis-laptop-local" via the Claude desktop app. `~/Projects` connected 2026-11-11. Computer use granted for Xcode (click-only) and Finder, background mode. **Xcode is still at its first-launch licence screen** (Claude didn't accept it). Simulator isn't installed until the iOS component is. The Mac shell (`device_bash`) is a Linux VM with no GitHub credentials, so code reaches the Mac as a snapshot (tarball copied in, then extracted) |
 | Mac copy | `~/Projects/language-keyboard` = snapshot of `ios-app` at commit `b508a82`. Re-copy after changes. `~/Projects/_to_delete/language-keyboard.tar.gz` can be deleted |
 | Waiting on Mancini | Xcode first launch + Apple ID (above). Team ID from developer.apple.com › Account › Membership. Blind-test picks |
 | Model default | App default **Sonnet 5.5** (Checks tab, changeable). Proxy default is still `haiku`. Final call after blind test |
+| Proxy change pending | `proxy/worker.js` v3.3 adds `explain` (language of tips/notes). Cloudflare deploys from `main`, so it goes live when PR #1 is merged; until then tips stay in English |
 | Open items | Rotate `APP_TOKEN` before daily use (then paste it into the app's Checks tab); blind-test judging page; Apple on-device model test (M2.5); Siri AI proposals in `docs/research/` |
 
 ---|---|
@@ -135,6 +136,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | Keyboard | `Keyboard/` | `KeyboardViewController` hosts SwiftUI. `KeyboardModel`: typing, pause check (punctuation = now, else after `pauseSeconds`), cancels on typing, Apply/rephrase replace the text only if it's unchanged. `KeyboardView`: bar, result card, keys (44pt, mockup colours, full-width touch areas, delete repeats). `SettingsPanel`: mockup's "Check settings" |
 | Companion app | `App/` | Tabs: Set up (steps + try-it field), Profiles (per language, edit/add/delete, speaker gender, Chinese region/script, "What I mean"), Checks (on/off, pause, model, proxy URL + token, test check with timing) |
 | Tests | `Tests/` | Hangul composition and backspace, diff highlighting, settings decoding. Also run on Linux with the Swift toolchain for quick checks |
+| Suggestions | `Shared/Lexicons.swift`, `Keyboard/Resources/` | Korean: 26.8k words (wordfreq), matched on jamo so 안녀 → 안녕 and 갑 → 가방. Chinese: 40k words with pinyin, simplified + Taiwan traditional (OpenCC s2twp); candidates = whole match, then longest leading word, then 3 longer words. Emoji: Unicode 16 and older. Rebuild with `tools/build_lexicons.py` |
 | Snapshots | `SnapshotTests/` | 8 states × light/dark, drawn in a chat frame. Light palette: white letter keys, grey function keys, #007aff blue, deeper orange (#c95c00) and green (#248a3d) for contrast on white. The grey platter behind the keys is only for snapshots; on a device the system draws the keyboard background |
 
 ### Where things live (no secret values here)
@@ -181,6 +183,16 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | D21 | Proxy token in App Group storage for now | Personal use; simple | Shared Keychain (move there before going public) |
 | D22 | App default model Sonnet 5.5, changeable in the app | Matches the current leaning (most accurate in 3-run scoring) without a proxy change | Proxy default `haiku` |
 | D23 | Light and dark mode both supported; keyboard follows the host app's keyboard appearance, then the system setting, and updates live | Mockup was dark only; Apple's keyboard does both | Dark only |
+| D25 | Bar = two-tone settings icon (language mark in the lighter tone; green after a clean check, pulsing while checking) + word suggestions. Corrections move to the card above | Mancini's feedback: "2 fixes · Friend · 반말" was clutter; match Apple's predictive bar | Status text in the bar |
+| D26 | Card: corrected text with changes in iOS blue, one-line reason in the chosen language, blue arrow to apply; concentric with the keyboard corners (6pt margin all round, radius 24) | Feedback: blue matches iOS; equal margins | Orange highlights, Apply capsule |
+| D27 | Long-press return (0.45s) applies the correction or the first rephrasing, with a haptic; return turns blue while one is ready | Quick apply without reaching up | Swipe on space |
+| D28 | No quick language key. Emoji key opens the keyboard's own emoji page (recents + Unicode groups) | Feedback: language only in settings. Third-party keyboards can't open Apple's emoji keyboard | Language toggle key (D20, replaced) |
+| D29 | Settings panel: native segmented controls, compact rows, same height for both languages; changes are a draft saved on Done. Korean: language, speech level, speaking to, age + gender (M/F/–), tone, what I mean. Chinese: language, script, speaking to, tone, what I mean | Feedback; fits the keyboard height without scrolling | Scrolling panel |
+| D30 | "Speaking to" is optional free text (replaces profiles); gender has a "not set" option and the check then assumes nothing | Feedback | Fixed profile chips |
+| D31 | Settings text fields are typed with the keyboard's own keys (field shown in the bar, ABC/한 toggle only there) | A keyboard can't type into a text field inside itself | Editing only in the companion app |
+| D32 | Chinese: simplified = mainland vocabulary, traditional = Taiwan vocabulary, for both checks and suggestions. Malaysia and HK later | Keep it simple | Separate region setting |
+| D33 | Chinese input MVP: own pinyin engine on a frequency list (marked text in the app's field) instead of RIME for now | Ships today, no C++ build; RIME can replace it later if quality needs it | RIME first |
+| D34 | Explanation language setting (English, 한국어, 简体, 繁體) sent to the proxy as `explain` | Feedback: reasoning localised to user settings | English only |
 | D24 | CI renders every keyboard state in light and dark (`KeyboardSnapshots` test target) and uploads them as the `keyboard-snapshots` artifact | Lets Mancini and Claude review the UI from a phone with no Mac or Simulator | Waiting for Simulator checks |
 
 ---
@@ -268,9 +280,12 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Run-to-run variance is large: single runs can't separate models. Use `score.py` with 3+ runs for decisions | Process rule |
 | 2026-11-11 | gemini_lite once corrupted text (교수님 → 교수닐) and once changed meaning (我想再去了) | Watch: a correction that introduces errors is worse than none |
 | 2026-11-11 | Haiku missed: 안 했어서, 언니 from a male speaker, 왜냐하면 structure, 오에스티 → OST | Open: compare Sonnet and Haiku with thinking on |
-| 2026-11-11 | Chinese layout types pinyin letters only | Open: RIME in chat C |
-| 2026-11-11 | "What I mean" can't be typed inside the keyboard (the keys type into the host app) | Set in the companion app for now; route keys into the note field later (M1) |
-| 2026-11-11 | No predictions yet: idle bar shows the profile summary (e.g. "Friend · 반말") | M2 |
+| 2026-11-11 | Chinese layout types pinyin letters only | Done: own pinyin engine (D33). Missing: abbreviations (nh → 你好), fuzzy pinyin, learning from use |
+| 2026-11-11 | Korean suggestions are word stems (wordfreq splits particles: 친구 not 친구랑); no next-word prediction after a space yet | M2 |
+| 2026-11-11 | Emoji page has no skin tones or search | Later |
+| 2026-11-11 | Korean word list loads in ~0.3s off the main thread; suggestions appear once it's ready | Watch on device |
+| 2026-11-11 | "What I mean" can't be typed inside the keyboard (the keys type into the host app) | Done: keys type into settings fields (D31) |
+| 2026-11-11 | No predictions yet: idle bar shows the profile summary (e.g. "Friend · 반말") | Done: Korean completions, Chinese candidates |
 | 2026-11-11 | Missing Apple-keyboard touches: key popups, click sound, haptics, double-space full stop, autocorrect on space, caps lock | M1/M2 |
 | 2026-11-11 | Settings changed inside the keyboard aren't saved without Full Access (App Group is read-only then) | By design; panel says so |
 | 2026-11-11 | Hangul composition replaces the syllable with delete + insert (no marked text). Some apps limit `documentContextBeforeInput`, which also limits what gets checked | Watch on device |
@@ -279,7 +294,7 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Mac shell has no GitHub credentials, so the Mac copy is a snapshot | Re-copy after changes, or sign in to GitHub in Xcode (Settings › Accounts) and pull there |
 | 2026-11-11 | App icon is a placeholder (한 key with an orange underline) | Replace before TestFlight if wanted |
 | 2026-11-11 | Snapshot review: correction tip was cut off after one line; "Their gender" column squeezed to "T" | Fixed (text wraps, gender column 112pt) |
-| 2026-11-11 | Settings panel shows down to "They are / Their gender"; the rest (Tone, What I mean) needs a scroll. Mockup panel is taller | Decide: keep scroll, or let the panel grow taller than the keys |
+| 2026-11-11 | Settings panel shows down to "They are / Their gender"; the rest (Tone, What I mean) needs a scroll | Done: compact rows fit without scrolling (D29) |
 | 2026-11-11 | `gh` CLI token in the cloud session is invalid | Use plain `curl` to `api.github.com` (with `Content-Type: application/json` for POSTs): reading runs and opening PRs both work |
 
 ---
@@ -299,5 +314,6 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Research: Siri AI Developer Preview (iOS 27.3) and Foundation Models; 3 integration proposals saved in docs/research |
 | 2026-11-11 | Mac setup started remotely: Xcode download from App Store; folders granted |
 | 2026-11-11 | Xcode installed; Apple Developer Program enrolled; ~12 GB freed on the Mac |
+| 2026-11-11 | MVP to Mancini's feedback (D25–D34): two-tone icons, concentric card with blue highlights and arrow, suggestions bar, long-press return, emoji page, settings draft + Done, in-keyboard fields, Korean suggestions, pinyin input, explanation language. Proxy v3.3 (`explain`) waits for merge |
 | 2026-11-11 | Light and dark mode: tuned light palette, live appearance updates, CI snapshots of 8 states in both modes |
 | 2026-11-11 | Chat B: iOS app skeleton in `app/` (XcodeGen, companion app, keyboard extension to the mockup, Hangul composer, proxy client, tests) and `.github/workflows/ios.yml`. CI green on `macos-26`. Snapshot copied to `~/Projects/language-keyboard` on the Mac. Branch `ios-app` |
