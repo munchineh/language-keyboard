@@ -296,6 +296,8 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Keyboard height grows when the correction card appears (`allowsSelfSizing`); not yet seen on screen | Check in Simulator |
 | 2026-11-11 | Xcode on the Mac is at its first-launch licence screen; Simulator not installed yet | Waiting on Mancini |
 | 2026-11-11 | Mac shell has no GitHub credentials, so the Mac copy is a snapshot | Re-copy after changes, or sign in to GitHub in Xcode (Settings › Accounts) and pull there |
+| 2026-11-11 | Copying to the Mac: re-sending a file under the same name kept the old copy. Use a new file name each time (e.g. `lk-<commit>.tar.gz` in `~/Projects/_to_delete/`), extract in the Mac shell, then `cp -R` over `~/Projects/language-keyboard` | Workaround in use |
+| 2026-11-11 | Computer use can't operate Xcode's Open panel (separate system process) or Finder while Mancini is in a full-screen app; opening the project needs one double-click from him | Ask him; afterwards Xcode lists it under recent projects |
 | 2026-11-11 | App icon is a placeholder (한 key with an orange underline) | Replace before TestFlight if wanted |
 | 2026-11-11 | Snapshot review: correction tip was cut off after one line; "Their gender" column squeezed to "T" | Fixed (text wraps, gender column 112pt) |
 | 2026-11-11 | Settings panel shows down to "They are / Their gender"; the rest (Tone, What I mean) needs a scroll | Done: compact rows fit without scrolling (D29) |
