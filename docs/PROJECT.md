@@ -24,6 +24,7 @@ Chat A (planning, proxy, model choice) ended 2026-11-11. The next chat starts th
 | Waiting on Mancini | First Xcode launch (component install, Mac password) and signing in to Xcode with his Apple ID. Apple Developer Program enrolled (Individual) |
 | Model default | Leaning **Sonnet 5.5** for both languages (most accurate in 3-run scoring, ~1.5s). Not yet confirmed; Mancini's blind-test picks pending |
 | UI path | Swift directly (web prototype skipped) |
+| Build without the Mac (planned) | Mancini won't be at the Mac for a while. Plan: XcodeGen spec (`app/project.yml`) in the repo; **GitHub Actions macOS runner** builds on every push; once the Apple Developer membership is active, an App Store Connect API key (stored as GitHub secrets) lets the workflow sign and upload to **TestFlight**, and Mancini installs from the TestFlight app on his iPhone. The Mac is optional: Simulator checks via computer use (Finder opens the project, Xcode Run is a click; Simulator is full-access). Simulator builds don't need an Apple ID sign-in |
 | Open items | Rotate `APP_TOKEN` before daily use; blind-test judging page; Apple on-device model test (M2.5); Siri AI proposals in `docs/research/` |
 
 ---
