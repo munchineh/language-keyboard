@@ -26,7 +26,8 @@ def call(token, item, model):
                  "User-Agent": "keyboard-blind-test/1.0"},
         method="POST",
     )
-    for attempt in range(2):
+    attempt = 0
+    while attempt < 2:
         start = time.time()
         try:
             with urllib.request.urlopen(req, timeout=20) as r:
@@ -37,8 +38,12 @@ def call(token, item, model):
             err = f"HTTP {e.code}: {e.read().decode('utf-8', 'replace')[:200]}"
             if e.code == 401:
                 sys.exit("Unauthorized: the APP_TOKEN doesn't match the Worker secret.")
+            if e.code == 429:  # proxy rate limit (30/min per token): wait it out, don't count it
+                time.sleep(int(e.headers.get("retry-after") or 60) + 1)
+                continue
         except Exception as e:  # network hiccup
             err = str(e)
+        attempt += 1
         time.sleep(1)
     return {"result": {"error": err}, "total_ms": 0, "model_ms": 0}
 

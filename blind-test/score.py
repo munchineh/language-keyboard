@@ -1,4 +1,4 @@
-import json, urllib.request, sys, time
+import json, urllib.request, urllib.error, sys, time
 from concurrent.futures import ThreadPoolExecutor
 EP="https://keyboard-proxy.mancini-tan.workers.dev/check"; TOK=sys.argv[1]
 items=json.load(open("sentences.json",encoding="utf-8"))
@@ -11,10 +11,15 @@ E={1:("fix",["께","드렸"],[]),2:("fix",["오셨"],[]),3:("fix",[],["있어?"]
 def call(a):
     item,m=a; p=dict(item); p.pop("tests",None); p["model"]=m
     req=urllib.request.Request(EP,data=json.dumps(p,ensure_ascii=False).encode(),headers={"Authorization":"Bearer "+TOK,"Content-Type":"application/json","User-Agent":"score"},method="POST")
-    for _ in range(2):
+    tries=0
+    while tries<2:
         try:
             with urllib.request.urlopen(req,timeout=25) as r: return json.loads(r.read())
-        except Exception as e: err=str(e); time.sleep(1)
+        except urllib.error.HTTPError as e:
+            if e.code==429: time.sleep(int(e.headers.get("retry-after") or 60)+1); continue  # proxy rate limit
+            err=str(e)
+        except Exception as e: err=str(e)
+        tries+=1; time.sleep(1)
     return {"error":err}
 def good(i,r):
     e=E[i]
