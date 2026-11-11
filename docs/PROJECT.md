@@ -1,7 +1,7 @@
 # Language Keyboard: project doc
 
 > Living document. Paste or attach this at the start of any new chat about the keyboard.
-> Last updated: 2026-11-11 · Owner: Mancini · Status: proxy v3 ready (Claude + Gemini), waiting on GitHub repo + deploy, then 5-model blind test
+> Last updated: 2026-11-11 · Owner: Mancini · Status: proxy v3 deployed from GitHub (Claude + Gemini); next: 5-model blind test
 
 ## How to use this doc (for Claude in future chats)
 
@@ -139,7 +139,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | Area | State |
 |---|---|
 | Spec and mockup | Done (V1 scope agreed) |
-| Cloudflare Worker | Live (v1). **v3 written and mock-tested**: Claude + Gemini, 5 model options, no-change guard, stricter prompt, error details. Deploys once the repo is connected |
+| Cloudflare Worker | Live (v1). **v3 written and mock-tested**: Claude + Gemini, 5 model options, no-change guard, stricter prompt, error details. Auto-deploys from `main` (repo connected 2026-11-11, root path `/proxy`) |
 | Claude API access | Working (Haiku confirmed live) |
 | Blind test | Haiku (thinking off) on 36 sentences: avg 1.18s model time (0.75–2.6s). About 23 good, 4 real misses, 5 over-corrections or no-change "fixes". Sonnet failed (400), needs re-run after v2. Add a third candidate: Haiku with thinking at low effort |
 | Measured speed | Haiku ~1.1–1.2s model time; ~2–3s total from curl on a Mac (cold connections, served from Cloudflare SEA/LAX). Expect ~1.4s per check in the keyboard with a reused connection |
@@ -152,7 +152,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | Milestone | Contents | Estimate | Status |
 |---|---|---|---|
 | M0 Proxy + model choice | Worker, blind test (5 models), pick a model per language, prompt tuning | days | In progress |
-| M0.5 Dev setup | GitHub repo + Worker auto-deploy (in progress), Apple Developer account, Xcode Cloud + TestFlight so builds can be installed away from the Mac | 1–2 days | In progress |
+| M0.5 Dev setup | GitHub repo + Worker auto-deploy (done), Apple Developer account, Xcode Cloud + TestFlight so builds can be installed away from the Mac | 1–2 days | In progress |
 | M1 Usable daily | Keyboard shell (fork Hamster or own), Korean + Chinese layouts, in-keyboard toggle, RIME, Hangul, pause check, settings + profiles, language pack structure | ~4–5 weeks | Not started |
 | M2 Typing quality | Autocorrect on space, word completion, next-word, learning from typing, rephrase UI | ~2–3 weeks | Not started |
 | M3 Learning mode | Long-press dictionary panel, offline dictionaries + LLM note, study list | ~1–2 weeks | Not started |
@@ -220,4 +220,4 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-10 | Chose Claude (Ultra credits) over Gemini for now; Cloudflare Worker proxy; secrets set |
 | 2026-11-11 | Proxy v1 live; Korean check verified (선생님한테 줬어 → 선생님께 드렸어); latency measured |
 | 2026-11-11 | Blind test built (36 sentences); Haiku run complete; Sonnet bug found; proxy v2 written; this doc created |
-| 2026-11-11 | Proxy v3: Gemini added (3.5 Flash-Lite, 3.8 Flash), Haiku-with-thinking option, no-change guard, stricter prompt. Blind test upgraded to 5 models. Repo files prepared |
+| 2026-11-11 | Proxy v3: Gemini added (3.5 Flash-Lite, 3.8 Flash), Haiku-with-thinking option, no-change guard, stricter prompt. Blind test upgraded to 5 models. Repo `munchineh/language-keyboard` created and connected to Cloudflare Builds (path `/proxy`, preview builds off). GEMINI_API_KEY added |
