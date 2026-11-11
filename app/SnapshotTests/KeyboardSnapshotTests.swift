@@ -11,36 +11,60 @@ final class KeyboardSnapshotTests: XCTestCase {
     private struct Scenario {
         let name: String
         let typed: String
+        var marked: String = ""
         let reply: String
         let configure: @MainActor (KeyboardModel) -> Void
     }
 
     private var states: [Scenario] { [
-        Scenario(name: "1-typing", typed: "친구랑 영화 보", reply: "이번 주말에 뭐 해?") { _ in },
-        Scenario(name: "2-correction", typed: "응, 어제 선생님한테 책을 줬어.", reply: "선생님한테 책 돌려줬어?") {
-            $0.bar = .fix(original: "응, 어제 선생님한테 책을 줬어.",
-                          corrected: "응, 어제 선생님께 책을 드렸어.",
-                          tip: "Talking about a teacher, even in 반말: 한테 → 께, 주다 → 드리다")
+        Scenario(name: "01-typing", typed: "친구랑 영화 보", reply: "이번 주말에 뭐 해?") {
+            $0.setWordForPreview("보")
         },
-        Scenario(name: "3-looks-good", typed: "친구랑 영화 보러 갈 거야.", reply: "이번 주말에 뭐 해?") {
-            $0.bar = .ok(stiff: false, text: "친구랑 영화 보러 갈 거야.")
+        Scenario(name: "02-correction", typed: "응, 어제 선생님한테 책을 줬어.", reply: "선생님한테 책 돌려줬어?") {
+            $0.check = .fix(original: "응, 어제 선생님한테 책을 줬어.",
+                            corrected: "응, 어제 선생님께 책을 드렸어.",
+                            tip: "Talking about a teacher, even in 반말: 한테 → 께, 주다 → 드리다")
         },
-        Scenario(name: "4-more-natural", typed: "그런데 그것은 정말 좋습니다.", reply: "새로 생긴 카페 가 봤어?") {
-            $0.bar = .ok(stiff: true, text: "그런데 그것은 정말 좋습니다.")
+        Scenario(name: "03-correction-korean-reason", typed: "응, 어제 선생님한테 책을 줬어.", reply: "선생님한테 책 돌려줬어?") {
+            $0.settings.explainLanguage = .korean
+            $0.check = .fix(original: "응, 어제 선생님한테 책을 줬어.",
+                            corrected: "응, 어제 선생님께 책을 드렸어.",
+                            tip: "반말이어도 선생님 얘기라서 한테 → 께, 주다 → 드리다로 써요")
         },
-        Scenario(name: "5-rephrase", typed: "그런데 그것은 정말 좋습니다.", reply: "새로 생긴 카페 가 봤어?") {
-            $0.bar = .options(original: "그런데 그것은 정말 좋습니다.", options: [
+        Scenario(name: "04-looks-good", typed: "친구랑 영화 보러 갈 거야.", reply: "이번 주말에 뭐 해?") {
+            $0.check = .ok(text: "친구랑 영화 보러 갈 거야.")
+        },
+        Scenario(name: "05-more-natural", typed: "그런데 그것은 정말 좋습니다.", reply: "새로 생긴 카페 가 봤어?") {
+            $0.check = .stiff(text: "그런데 그것은 정말 좋습니다.")
+        },
+        Scenario(name: "06-rephrase", typed: "그런데 그것은 정말 좋습니다.", reply: "새로 생긴 카페 가 봤어?") {
+            $0.check = .options(original: "그런데 그것은 정말 좋습니다.", options: [
                 RephraseOption(label: "Natural", text: "근데 거기 진짜 좋아.", note: "근데 and 거기 are how people say it in chat"),
                 RephraseOption(label: "Very casual", text: "근데 거기 개좋아 ㅋㅋ", note: "개- = very, only with close friends"),
             ])
         },
-        Scenario(name: "6-settings", typed: "친구랑 영화 보러 갈 거야", reply: "이번 주말에 뭐 해?") {
-            $0.panel = .settings
+        Scenario(name: "07-settings-korean", typed: "친구랑 영화 보러 갈 거야", reply: "이번 주말에 뭐 해?") {
+            $0.settings.updateContext(for: .korean) { $0.speakingTo = "선배"; $0.listenerAge = .older }
+            $0.openSettings()
         },
-        Scenario(name: "7-chinese", typed: "wo", reply: "你週末要幹嘛？") {
+        Scenario(name: "08-settings-chinese", typed: "", reply: "你週末要幹嘛？") {
             $0.settings.language = .chinese
+            $0.openSettings()
         },
-        Scenario(name: "8-numbers", typed: "3시에", reply: "몇 시에 만나?") {
+        Scenario(name: "09-typing-in-settings", typed: "친구랑 영화 보러 갈 거야", reply: "이번 주말에 뭐 해?") {
+            $0.openSettings()
+            $0.beginEditing(.speakingTo)
+            $0.fieldText = "회사 선배"
+        },
+        Scenario(name: "10-chinese-pinyin", typed: "", marked: "nihao", reply: "你週末要幹嘛？") {
+            $0.settings.language = .chinese
+            $0.setPinyinForPreview("nihao")
+        },
+        Scenario(name: "11-emoji", typed: "ㅋㅋㅋ", reply: "이번 주말에 뭐 해?") {
+            $0.settings.recentEmoji = ["😂", "👍", "🥹", "🙏", "😭", "❤️", "🔥", "🤣", "😊", "👀"]
+            $0.page = .emoji
+        },
+        Scenario(name: "12-numbers", typed: "3시에", reply: "몇 시에 만나?") {
             $0.page = .numbers
         },
     ] }
@@ -58,8 +82,10 @@ final class KeyboardSnapshotTests: XCTestCase {
                 let model = KeyboardModel(store: SettingsStore(defaults: defaults))
                 model.isDark = dark
                 model.fullAccessOverride = true
+                model.loadResources(synchronously: true)
                 state.configure(model)
-                let image = try render(SnapshotScreen(model: model, typed: state.typed, reply: state.reply), dark: dark)
+                let screen = SnapshotScreen(model: model, typed: state.typed, marked: state.marked, reply: state.reply)
+                let image = try render(screen, dark: dark)
                 let file = folder.appendingPathComponent("\(dark ? "dark" : "light")-\(state.name).png")
                 try XCTUnwrap(image.pngData()).write(to: file)
             }
@@ -95,6 +121,7 @@ final class KeyboardSnapshotTests: XCTestCase {
 private struct SnapshotScreen: View {
     @ObservedObject var model: KeyboardModel
     let typed: String
+    let marked: String
     let reply: String
 
     private var theme: KeyboardTheme { KeyboardTheme(isDark: model.isDark) }
@@ -120,6 +147,9 @@ private struct SnapshotScreen: View {
             HStack(spacing: 8) {
                 HStack(spacing: 1) {
                     Text(typed).font(.system(size: 16)).foregroundStyle(theme.text)
+                    if !marked.isEmpty {
+                        Text(marked).font(.system(size: 16)).foregroundStyle(theme.text).underline()
+                    }
                     Rectangle().fill(theme.accent).frame(width: 2, height: 19)
                     Spacer(minLength: 0)
                 }
@@ -135,7 +165,8 @@ private struct SnapshotScreen: View {
             KeyboardRootView(model: model)
                 .padding(.bottom, 46) // space for the system globe/mic row
                 .background(
-                    UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 46, bottomTrailingRadius: 46, topTrailingRadius: 30)
+                    UnevenRoundedRectangle(topLeadingRadius: KeyMetrics.keyboardRadius, bottomLeadingRadius: 46,
+                                           bottomTrailingRadius: 46, topTrailingRadius: KeyMetrics.keyboardRadius)
                         .fill(theme.snapshotPlatter)
                 )
                 .padding(.horizontal, 4)

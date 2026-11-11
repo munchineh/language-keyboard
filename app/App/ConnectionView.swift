@@ -67,7 +67,8 @@ struct ConnectionView: View {
         profile.relationship = "friend"
         profile.speech_level = "banmal"
         let request = CheckRequest(lang: "ko", text: "응, 어제 선생님한테 책을 줬어.", context: nil,
-                                   profile: profile, note: nil, model: settings.value.model.rawValue)
+                                   profile: profile, note: nil, model: settings.value.model.rawValue,
+                                   explain: settings.value.explainLanguage.rawValue)
         let started = Date()
         do {
             let (response, latency) = try await ProxyClient.shared.check(request)

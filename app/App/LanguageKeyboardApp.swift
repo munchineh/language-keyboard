@@ -9,8 +9,8 @@ struct LanguageKeyboardApp: App {
             TabView {
                 SetupView()
                     .tabItem { Label("Set up", systemImage: "keyboard") }
-                ProfilesView()
-                    .tabItem { Label("Profiles", systemImage: "person.2") }
+                WritingView()
+                    .tabItem { Label("Writing", systemImage: "text.bubble") }
                 ConnectionView()
                     .tabItem { Label("Checks", systemImage: "checkmark.bubble") }
             }

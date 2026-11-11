@@ -6,14 +6,13 @@ enum KeyboardLanguage: String, Codable, CaseIterable, Identifiable, CodingKeyRep
     case chinese = "zh"
 
     var id: String { rawValue }
-    /// Long label (settings, space bar).
     var name: String {
         switch self {
         case .korean: return "한국어"
         case .chinese: return "中文"
         }
     }
-    /// One-character badge on the settings button.
+    /// One-character mark shown next to the settings icon.
     var badge: String {
         switch self {
         case .korean: return "한"
@@ -40,10 +39,24 @@ enum RelativeAge: String, Codable, CaseIterable, Identifiable {
     var label: String { rawValue.capitalized }
 }
 
+/// Listener's or user's gender. `unset` means the check doesn't assume one.
 enum Gender: String, Codable, CaseIterable, Identifiable {
-    case male, female
+    case male, female, unset
     var id: String { rawValue }
-    var short: String { self == .male ? "M" : "F" }
+    var label: String {
+        switch self {
+        case .male: return "Male"
+        case .female: return "Female"
+        case .unset: return "Not set"
+        }
+    }
+    var short: String {
+        switch self {
+        case .male: return "M"
+        case .female: return "F"
+        case .unset: return "–"
+        }
+    }
 }
 
 enum Tone: String, Codable, CaseIterable, Identifiable {
@@ -52,16 +65,29 @@ enum Tone: String, Codable, CaseIterable, Identifiable {
     var label: String { rawValue.capitalized }
 }
 
-enum ChineseRegion: String, Codable, CaseIterable, Identifiable {
-    case mainland, taiwan
-    var id: String { rawValue }
-    var label: String { self == .mainland ? "Mainland" : "Taiwan" }
-}
-
+/// Simplified = mainland vocabulary, traditional = Taiwan vocabulary (for now).
 enum ChineseScript: String, Codable, CaseIterable, Identifiable {
     case simplified, traditional
     var id: String { rawValue }
     var label: String { self == .simplified ? "简体" : "繁體" }
+    var region: String { self == .simplified ? "mainland" : "taiwan" }
+}
+
+/// Language of the one-line reasons under corrections and rephrasings.
+enum ExplainLanguage: String, Codable, CaseIterable, Identifiable {
+    case english = "en"
+    case korean = "ko"
+    case chineseSimplified = "zh-Hans"
+    case chineseTraditional = "zh-Hant"
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .english: return "English"
+        case .korean: return "한국어"
+        case .chineseSimplified: return "简体中文"
+        case .chineseTraditional: return "繁體中文"
+        }
+    }
 }
 
 /// Model keys the proxy accepts. See docs/PROJECT.md, section 3.
@@ -79,52 +105,43 @@ enum CheckModel: String, Codable, CaseIterable, Identifiable {
     }
 }
 
-/// Who you're texting. Saved per language ("Friend", "Senior", "Teacher", ...).
-struct Profile: Codable, Identifiable, Equatable, Hashable {
-    var id: UUID = UUID()
-    var name: String
-    var relationship: String
-    var tone: Tone = .neutral
-    // Korean
+/// Who you're texting and how, set per language in the keyboard's settings panel.
+struct CheckContext: Codable, Equatable {
     var speechLevel: SpeechLevel = .banmal
+    /// Optional, free text: "friend", "선배", "my boss".
+    var speakingTo: String = ""
     var listenerAge: RelativeAge = .same
-    var listenerGender: Gender? = nil
+    var listenerGender: Gender = .unset
+    var tone: Tone = .neutral
+    /// "What I mean", sent with every check until cleared.
+    var note: String = ""
 
-    static func defaults(for language: KeyboardLanguage) -> [Profile] {
-        switch language {
-        case .korean:
-            return [
-                Profile(name: "Friend", relationship: "friend", tone: .playful, speechLevel: .banmal, listenerAge: .same),
-                Profile(name: "Senior", relationship: "senior (선배)", tone: .warm, speechLevel: .haeyo, listenerAge: .older),
-                Profile(name: "Teacher", relationship: "teacher", tone: .neutral, speechLevel: .haeyo, listenerAge: .older),
-                Profile(name: "Stranger", relationship: "stranger", tone: .neutral, speechLevel: .haeyo, listenerAge: .same),
-            ]
-        case .chinese:
-            return [
-                Profile(name: "Friend", relationship: "friend", tone: .playful),
-                Profile(name: "Colleague", relationship: "colleague", tone: .neutral),
-                Profile(name: "Teacher", relationship: "teacher", tone: .neutral),
-            ]
-        }
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = CheckContext()
+        speechLevel = (try? c.decodeIfPresent(SpeechLevel.self, forKey: .speechLevel)) ?? d.speechLevel
+        speakingTo = (try? c.decodeIfPresent(String.self, forKey: .speakingTo)) ?? d.speakingTo
+        listenerAge = (try? c.decodeIfPresent(RelativeAge.self, forKey: .listenerAge)) ?? d.listenerAge
+        listenerGender = (try? c.decodeIfPresent(Gender.self, forKey: .listenerGender)) ?? d.listenerGender
+        tone = (try? c.decodeIfPresent(Tone.self, forKey: .tone)) ?? d.tone
+        note = (try? c.decodeIfPresent(String.self, forKey: .note)) ?? d.note
     }
 }
 
 /// Everything the keyboard and the companion app share through the App Group.
 struct KeyboardSettings: Codable, Equatable {
     var language: KeyboardLanguage = .korean
-    var profiles: [KeyboardLanguage: [Profile]] = [
-        .korean: Profile.defaults(for: .korean),
-        .chinese: Profile.defaults(for: .chinese),
-    ]
-    var activeProfileID: [KeyboardLanguage: UUID] = [:]
-    var speakerGender: Gender = .male
-    var region: ChineseRegion = .taiwan
+    var contexts: [KeyboardLanguage: CheckContext] = [:]
     var script: ChineseScript = .traditional
-    var note: String = ""
+    var speakerGender: Gender = .unset
+    var explainLanguage: ExplainLanguage = .english
     var model: CheckModel = .sonnet
     var checksEnabled: Bool = true
     /// Seconds without typing before a check starts.
     var pauseSeconds: Double = 1.0
+    var recentEmoji: [String] = []
 
     init() {}
 
@@ -133,59 +150,45 @@ struct KeyboardSettings: Codable, Equatable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let d = KeyboardSettings()
         language = (try? c.decodeIfPresent(KeyboardLanguage.self, forKey: .language)) ?? d.language
-        profiles = (try? c.decodeIfPresent([KeyboardLanguage: [Profile]].self, forKey: .profiles)) ?? d.profiles
-        activeProfileID = (try? c.decodeIfPresent([KeyboardLanguage: UUID].self, forKey: .activeProfileID)) ?? d.activeProfileID
-        speakerGender = (try? c.decodeIfPresent(Gender.self, forKey: .speakerGender)) ?? d.speakerGender
-        region = (try? c.decodeIfPresent(ChineseRegion.self, forKey: .region)) ?? d.region
+        contexts = (try? c.decodeIfPresent([KeyboardLanguage: CheckContext].self, forKey: .contexts)) ?? d.contexts
         script = (try? c.decodeIfPresent(ChineseScript.self, forKey: .script)) ?? d.script
-        note = (try? c.decodeIfPresent(String.self, forKey: .note)) ?? d.note
+        speakerGender = (try? c.decodeIfPresent(Gender.self, forKey: .speakerGender)) ?? d.speakerGender
+        explainLanguage = (try? c.decodeIfPresent(ExplainLanguage.self, forKey: .explainLanguage)) ?? d.explainLanguage
         model = (try? c.decodeIfPresent(CheckModel.self, forKey: .model)) ?? d.model
         checksEnabled = (try? c.decodeIfPresent(Bool.self, forKey: .checksEnabled)) ?? d.checksEnabled
         pauseSeconds = (try? c.decodeIfPresent(Double.self, forKey: .pauseSeconds)) ?? d.pauseSeconds
+        recentEmoji = (try? c.decodeIfPresent([String].self, forKey: .recentEmoji)) ?? d.recentEmoji
     }
 
-    func profiles(for language: KeyboardLanguage) -> [Profile] {
-        profiles[language] ?? Profile.defaults(for: language)
+    func context(for language: KeyboardLanguage) -> CheckContext {
+        contexts[language] ?? CheckContext()
     }
 
-    func activeProfile(for language: KeyboardLanguage) -> Profile {
-        let list = profiles(for: language)
-        if let id = activeProfileID[language], let match = list.first(where: { $0.id == id }) {
-            return match
-        }
-        return list.first ?? Profile(name: "Friend", relationship: "friend")
+    mutating func updateContext(for language: KeyboardLanguage, _ change: (inout CheckContext) -> Void) {
+        var ctx = context(for: language)
+        change(&ctx)
+        contexts[language] = ctx
     }
 
-    mutating func updateActiveProfile(for language: KeyboardLanguage, _ change: (inout Profile) -> Void) {
-        var list = profiles(for: language)
-        let current = activeProfile(for: language)
-        guard let index = list.firstIndex(where: { $0.id == current.id }) else { return }
-        change(&list[index])
-        profiles[language] = list
-        activeProfileID[language] = list[index].id
-    }
-
-    /// Short summary for the suggestion bar, e.g. "Friend · 반말".
-    func summary(for language: KeyboardLanguage) -> String {
-        let p = activeProfile(for: language)
-        switch language {
-        case .korean: return "\(p.name) · \(p.speechLevel.label)"
-        case .chinese: return "\(p.name) · \(region.label)"
-        }
+    mutating func addRecentEmoji(_ emoji: String) {
+        recentEmoji.removeAll { $0 == emoji }
+        recentEmoji.insert(emoji, at: 0)
+        if recentEmoji.count > 32 { recentEmoji.removeLast(recentEmoji.count - 32) }
     }
 
     /// The `profile` object the proxy expects.
     func proxyProfile(for language: KeyboardLanguage) -> ProxyProfile {
-        let p = activeProfile(for: language)
-        var out = ProxyProfile(relationship: p.relationship, tone: p.tone.rawValue)
+        let ctx = context(for: language)
+        let speakingTo = ctx.speakingTo.trimmingCharacters(in: .whitespacesAndNewlines)
+        var out = ProxyProfile(relationship: speakingTo.isEmpty ? nil : speakingTo, tone: ctx.tone.rawValue)
         switch language {
         case .korean:
-            out.speech_level = p.speechLevel.rawValue
-            out.listener_age = p.listenerAge.rawValue
-            out.listener_gender = p.listenerGender?.rawValue
-            out.speaker_gender = speakerGender.rawValue
+            out.speech_level = ctx.speechLevel.rawValue
+            out.listener_age = ctx.listenerAge.rawValue
+            out.listener_gender = ctx.listenerGender == .unset ? nil : ctx.listenerGender.rawValue
+            out.speaker_gender = speakerGender == .unset ? nil : speakerGender.rawValue
         case .chinese:
-            out.region = region.rawValue
+            out.region = script.region
             out.script = script.rawValue
         }
         return out

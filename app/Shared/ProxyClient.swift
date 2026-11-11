@@ -22,6 +22,8 @@ struct CheckRequest: Codable, Equatable {
     var profile: ProxyProfile
     var note: String?
     var model: String?
+    /// Language for "tip" and "note" (en, ko, zh-Hans, zh-Hant).
+    var explain: String?
 }
 
 /// `/check` response: `{"status":"ok","stiff":bool}` or

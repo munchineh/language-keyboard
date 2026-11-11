@@ -60,5 +60,7 @@ final class KeyboardViewController: UIInputViewController {
         default: dark = traitCollection.userInterfaceStyle == .dark
         }
         if model.isDark != dark { model.isDark = dark }
+        // Native controls (segmented pickers) follow UIKit's style, not SwiftUI's.
+        hosting?.overrideUserInterfaceStyle = dark ? .dark : .light
     }
 }

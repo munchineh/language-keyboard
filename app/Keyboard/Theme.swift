@@ -25,8 +25,12 @@ struct KeyboardTheme {
 
     /// Blue for Apply, selected chips and "More natural" (#0a84ff dark, #007aff light).
     var accent: Color { isDark ? Color(red: 10 / 255, green: 132 / 255, blue: 1) : Color(red: 0, green: 122 / 255, blue: 1) }
-    /// Changed words in a correction (#ffb340 dark from the mockup, deeper orange on white).
-    var fixHighlight: Color { isDark ? Color(red: 1, green: 179 / 255, blue: 64 / 255) : Color(red: 201 / 255, green: 92 / 255, blue: 0) }
+    /// Changed words in a correction: the iOS blue, as in the system's own suggestions.
+    var highlight: Color { accent }
+    /// Warnings (no Full Access, proxy errors).
+    var warning: Color { isDark ? Color(red: 1, green: 179 / 255, blue: 64 / 255) : Color(red: 201 / 255, green: 92 / 255, blue: 0) }
+    /// Second tone of two-tone icons (the language mark next to the settings icon).
+    var iconSecondary: Color { isDark ? Color.white.opacity(0.45) : Color.black.opacity(0.38) }
     /// "Looks natural" tick (#30d158 dark, #248a3d light).
     var good: Color { isDark ? Color(red: 48 / 255, green: 209 / 255, blue: 88 / 255) : Color(red: 36 / 255, green: 138 / 255, blue: 61 / 255) }
 

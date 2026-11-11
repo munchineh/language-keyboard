@@ -103,20 +103,62 @@ final class TextDiffTests: XCTestCase {
 final class SettingsTests: XCTestCase {
     func testRoundTripAndProxyProfile() throws {
         var settings = KeyboardSettings()
-        settings.updateActiveProfile(for: .korean) { $0.speechLevel = .hapsyo }
+        settings.updateContext(for: .korean) {
+            $0.speechLevel = .hapsyo
+            $0.speakingTo = " 선배 "
+        }
         let data = try JSONEncoder().encode(settings)
         let decoded = try JSONDecoder().decode(KeyboardSettings.self, from: data)
         XCTAssertEqual(decoded, settings)
-        XCTAssertEqual(decoded.proxyProfile(for: .korean).speech_level, "hapsyo")
-        XCTAssertEqual(decoded.proxyProfile(for: .chinese).region, "taiwan")
-        XCTAssertNil(decoded.proxyProfile(for: .chinese).speech_level)
+        let ko = decoded.proxyProfile(for: .korean)
+        XCTAssertEqual(ko.speech_level, "hapsyo")
+        XCTAssertEqual(ko.relationship, "선배")
+        XCTAssertNil(ko.listener_gender) // not set: the check doesn't assume
+        let zh = decoded.proxyProfile(for: .chinese)
+        XCTAssertEqual(zh.region, "taiwan")
+        XCTAssertNil(zh.relationship)
+        XCTAssertNil(zh.speech_level)
     }
 
     func testOldSettingsMissingFieldsStillDecode() throws {
-        let json = #"{"language":"zh","pauseSeconds":1.5}"#.data(using: .utf8)!
+        let json = #"{"language":"zh","pauseSeconds":1.5,"profiles":{"ko":[]}}"#.data(using: .utf8)!
         let decoded = try JSONDecoder().decode(KeyboardSettings.self, from: json)
         XCTAssertEqual(decoded.language, .chinese)
         XCTAssertEqual(decoded.pauseSeconds, 1.5)
         XCTAssertEqual(decoded.model, KeyboardSettings().model)
+    }
+
+    func testRecentEmoji() {
+        var s = KeyboardSettings()
+        s.addRecentEmoji("😂"); s.addRecentEmoji("👍"); s.addRecentEmoji("😂")
+        XCTAssertEqual(s.recentEmoji, ["😂", "👍"])
+    }
+}
+
+final class LexiconTests: XCTestCase {
+    func testKoreanCompletions() {
+        let lexicon = KoreanLexicon(words: ["이", "안녕", "안녕하세요", "가방", "가족", "감사", "친구"])
+        XCTAssertEqual(lexicon.completions(for: "안녀"), ["안녕", "안녕하세요"])
+        XCTAssertEqual(lexicon.completions(for: "안녕"), ["안녕하세요"])
+        XCTAssertEqual(lexicon.completions(for: "ㅊ"), ["친구"])
+        // The final ㅂ of 갑 may start the next syllable: 가방.
+        XCTAssertEqual(lexicon.completions(for: "갑"), ["가방"])
+        XCTAssertEqual(lexicon.completions(for: "가"), ["가방", "가족", "감사"])
+    }
+
+    func testPinyinCandidates() {
+        let lines: [Substring] = ["nihao\t你好\t你好", "ni\t你\t你", "hao\t好\t好", "ruanjian\t软件\t軟體", "nimen\t你们\t你們"]
+        let lexicon = PinyinLexicon(lines: lines)
+        let zh = lexicon.candidates(for: "nihao", script: .simplified)
+        XCTAssertEqual(zh.first, .init(text: "你好", consumed: 5))
+        XCTAssertTrue(zh.contains(.init(text: "你", consumed: 2)))
+        XCTAssertEqual(lexicon.candidates(for: "ruanjian", script: .traditional).first?.text, "軟體")
+        XCTAssertEqual(Array(lexicon.candidates(for: "ni", script: .traditional).map(\.text).prefix(3)), ["你", "你好", "你們"])
+    }
+
+    func testEmojiCatalog() {
+        let catalog = EmojiCatalog(text: "Smileys & Emotion\t😀 😃\nFlags\t🏁")
+        XCTAssertEqual(catalog.groups.map(\.emoji.count), [2, 1])
+        XCTAssertEqual(catalog.groups.first?.symbol, "face.smiling")
     }
 }

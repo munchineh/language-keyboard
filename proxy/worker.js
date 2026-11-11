@@ -3,7 +3,7 @@
 //   ANTHROPIC_API_KEY, GEMINI_API_KEY, APP_TOKEN
 // Privacy: this Worker never logs or stores the text it receives.
 
-const VERSION = "3.2";
+const VERSION = "3.3";
 const DEFAULT_MODEL = "haiku";
 const MAX_TEXT = 1000;      // characters per request
 const MAX_CONTEXT = 500;
@@ -42,6 +42,13 @@ const SLANG = {
 // ---------- prompts ----------
 
 const LANG_NAME = { ko: "Korean", zh: "Mandarin Chinese" };
+// Language for "tip" and "note" (set in the app). Corrected text stays in the checked language.
+const EXPLAIN_NAME = {
+  en: "English",
+  ko: "Korean (simple, polite 해요체)",
+  "zh-Hans": "Chinese, simplified characters",
+  "zh-Hant": "Chinese, traditional characters",
+};
 
 function profileLines(lang, p = {}) {
   const lines = [];
@@ -88,7 +95,7 @@ Hard rules:
 - Keep every word that doesn't need correcting. Never drop or add content.
 - Never "correct" slang, abbreviations, laughter (ㅋㅋ, 哈哈), emoji or casual online spelling into standard forms. Only flag them if misused.
 - Make the smallest change that fixes the error. Keep the user's words, voice and casualness.
-- "tip" is one short English line (max 90 characters) explaining the main fix, quoting the changed words. No em dashes.
+- "tip" is one short line (max 90 characters) in the explanation language given with the request, explaining the main fix and quoting the changed words. No em dashes.
 - If unsure whether something is wrong, choose "ok".
 
 ${LANG_RULES[lang]}
@@ -107,7 +114,7 @@ Give exactly two options:
 
 Rules:
 - Keep the meaning. Do not add new information.
-- "note" is one short English line (max 90 characters) naming the key changes, quoting the words. No em dashes.
+- "note" is one short line (max 90 characters) in the explanation language given with the request, naming the key changes and quoting the words. No em dashes.
 
 ${LANG_RULES[lang]}
 
@@ -122,7 +129,7 @@ const CHECK_SCHEMA = {
     status: { type: "string", enum: ["ok", "fix"] },
     stiff: { type: "boolean", description: "Correct but noticeably textbook-like for texting" },
     corrected: { type: "string", description: "Full corrected text, only when status is fix" },
-    tip: { type: "string", description: "One short English line, only when status is fix" },
+    tip: { type: "string", description: "One short line in the explanation language, only when status is fix" },
   },
   required: ["status", "stiff"],
 };
@@ -286,7 +293,7 @@ export default {
       return json({ error: "invalid json" }, 400);
     }
 
-    const { lang, text, context = "", profile = {}, note = "" } = body || {};
+    const { lang, text, context = "", profile = {}, note = "", explain = "en" } = body || {};
     const modelKey = MODELS[body?.model] ? body.model : DEFAULT_MODEL;
     const m = MODELS[modelKey];
     if (!LANG_NAME[lang]) return json({ error: "lang must be ko or zh" }, 400);
@@ -301,6 +308,7 @@ export default {
       ? `Always answer by calling the ${toolName} tool.`
       : "Answer only with JSON matching the response schema.";
     const userContent = [
+      `Explanation language: ${EXPLAIN_NAME[explain] || EXPLAIN_NAME.en}`,
       `Profile:\n${profileLines(lang, profile)}`,
       context ? `Message being replied to:\n${context}` : "",
       note ? `What the user means: ${note}` : "",
