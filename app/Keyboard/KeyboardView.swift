@@ -156,10 +156,12 @@ struct ResultCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     highlighted(old: original, new: corrected)
                         .font(.system(size: 15))
+                        .fixedSize(horizontal: false, vertical: true)
                     if !tip.isEmpty {
                         Text(tip)
                             .font(.system(size: 13))
                             .foregroundStyle(theme.secondaryText)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
             }
@@ -175,10 +177,12 @@ struct ResultCard: View {
                                     .foregroundStyle(theme.tertiaryText)
                                 highlighted(old: original, new: option.text)
                                     .font(.system(size: 15))
+                                    .fixedSize(horizontal: false, vertical: true)
                                 if let note = option.note, !note.isEmpty {
                                     Text(note)
                                         .font(.system(size: 13))
                                         .foregroundStyle(theme.secondaryText)
+                                        .fixedSize(horizontal: false, vertical: true)
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)

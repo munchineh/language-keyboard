@@ -56,14 +56,14 @@ struct SettingsPanel: View {
                                     model.updateProfile { $0.listenerAge = age }
                                 }
                             }
-                            .layoutPriority(3)
+                            .frame(maxWidth: .infinity)
                             section("Their gender") {
                                 Segmented(options: Gender.allCases, selection: profile.listenerGender, label: { $0.short }, theme: theme) { gender in
                                     // Tap the selected one again to clear it.
                                     model.updateProfile { $0.listenerGender = $0.listenerGender == gender ? nil : gender }
                                 }
                             }
-                            .layoutPriority(2)
+                            .frame(width: 112)
                         }
                     } else {
                         HStack(alignment: .top, spacing: 10) {
