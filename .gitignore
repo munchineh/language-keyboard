@@ -4,3 +4,7 @@ node_modules/
 .dev.vars
 *.env
 blind-test/results*.html
+build/
+DerivedData/
+xcuserdata/
+*.xcuserstate

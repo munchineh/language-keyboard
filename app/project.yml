@@ -1,0 +1,126 @@
+# XcodeGen spec: the source of truth for the Xcode project.
+# CI runs `xcodegen generate --spec app/project.yml` and commits the generated
+# app/LanguageKeyboard.xcodeproj back to the branch, so the Mac can open it
+# without running any command. Don't edit the .xcodeproj by hand.
+
+name: LanguageKeyboard
+
+options:
+  bundleIdPrefix: com.mancinitan
+  deploymentTarget:
+    iOS: "18.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    SWIFT_STRICT_CONCURRENCY: minimal
+    TARGETED_DEVICE_FAMILY: "1"
+    CODE_SIGN_STYLE: Automatic
+    # Set once the Apple Developer Team ID is known (needed for device/TestFlight only).
+    DEVELOPMENT_TEAM: ""
+    # Simulator builds sign locally, so no Apple ID or team is needed for them.
+    "CODE_SIGN_IDENTITY[sdk=iphonesimulator*]": "-"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+
+schemes:
+  LanguageKeyboard:
+    build:
+      targets:
+        LanguageKeyboard: all
+        Keyboard: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - SharedTests
+    archive:
+      config: Release
+  Keyboard:
+    build:
+      targets:
+        Keyboard: all
+        LanguageKeyboard: all
+    run:
+      config: Debug
+      # Ask which app to run the keyboard in (Messages, Notes, ...).
+      askForAppToLaunch: true
+
+targets:
+  LanguageKeyboard:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+      - path: Shared
+    dependencies:
+      - target: Keyboard
+        embed: true
+        codeSign: true
+    entitlements:
+      path: App/LanguageKeyboard.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.mancinitan.LanguageKeyboard
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Language Keyboard
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mancinitan.LanguageKeyboard
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: YES
+
+  Keyboard:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Keyboard
+      - path: Shared
+    entitlements:
+      path: Keyboard/Keyboard.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.mancinitan.LanguageKeyboard
+    info:
+      path: Keyboard/Info.plist
+      properties:
+        CFBundleDisplayName: Language Keyboard
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.keyboard-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).KeyboardViewController
+          NSExtensionAttributes:
+            IsASCIICapable: false
+            PrefersRightToLeft: false
+            PrimaryLanguage: ko-KR
+            # Needed for the proxy calls (network) and for writing settings to the App Group.
+            RequestsOpenAccess: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mancinitan.LanguageKeyboard.Keyboard
+        APPLICATION_EXTENSION_API_ONLY: YES
+
+  SharedTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Shared
+      - path: Tests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mancinitan.LanguageKeyboard.SharedTests
+        GENERATE_INFOPLIST_FILE: YES
