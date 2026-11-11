@@ -1,7 +1,7 @@
 # Language Keyboard: project doc
 
 > Living document. Paste or attach this at the start of any new chat about the keyboard.
-> Last updated: 2026-11-11 · Owner: Mancini · Status: proxy v3 live (Claude + Gemini); 5-model blind test ready to judge
+> Last updated: 2026-11-11 · Owner: Mancini · Status: proxy v3 live (Claude + Gemini); 5-model blind test ready to judge; iOS app skeleton builds green in GitHub Actions
 
 ## How to use this doc (for Claude in future chats)
 
@@ -15,10 +15,20 @@
 
 ## 0. Handoff (read first)
 
-Chat A (planning, proxy, model choice) ended 2026-11-11. The next chat starts the Swift build (chats B + C in section 8).
+Chat B (iOS project + CI) ended 2026-11-11. The app skeleton builds and tests green on GitHub Actions. Branch `ios-app`, PR to `main` open.
 
 | Item | State |
 |---|---|
+| Next task | **1.** Mancini at the Mac once: open Xcode, accept the licence, install the iOS component (asks for the Mac password), sign in with his Apple ID. **2.** Claude: Simulator check (Finder › `~/Projects/language-keyboard/app/LanguageKeyboard.xcodeproj`, scheme LanguageKeyboard, Run). **3.** TestFlight: Team ID into `project.yml`, register bundle IDs + App Group, App Store Connect API key as GitHub secrets, add an upload job. **4.** Chat C: RIME for Chinese |
+| iOS app | `app/` (see section 3, "iOS app"). Companion app, keyboard extension, shared code, 13 unit tests. Korean typing works end to end in code (Hangul composition, pause check, Apply, rephrase); Chinese types pinyin letters until RIME |
+| CI | `.github/workflows/ios.yml` on `macos-26` (Xcode 26.6): XcodeGen, Simulator build, unsigned device build, tests, then commits the generated `.xcodeproj`, Info.plists and entitlements back with `[skip ci]`. ~4 min per run. Claude can read run results through `api.github.com` from the cloud session |
+| Mac access | Mac "mancinis-laptop-local" via the Claude desktop app. `~/Projects` connected 2026-11-11. Computer use granted for Xcode (click-only) and Finder, background mode. **Xcode is still at its first-launch licence screen** (Claude didn't accept it). Simulator isn't installed until the iOS component is. The Mac shell (`device_bash`) is a Linux VM with no GitHub credentials, so code reaches the Mac as a snapshot (tarball copied in, then extracted) |
+| Mac copy | `~/Projects/language-keyboard` = snapshot of `ios-app` at commit `b508a82`. Re-copy after changes. `~/Projects/_to_delete/language-keyboard.tar.gz` can be deleted |
+| Waiting on Mancini | Xcode first launch + Apple ID (above). Team ID from developer.apple.com › Account › Membership. Blind-test picks |
+| Model default | App default **Sonnet 5.5** (Checks tab, changeable). Proxy default is still `haiku`. Final call after blind test |
+| Open items | Rotate `APP_TOKEN` before daily use (then paste it into the app's Checks tab); blind-test judging page; Apple on-device model test (M2.5); Siri AI proposals in `docs/research/` |
+
+---|---|
 | Next task | Create the Xcode project in this repo (`app/`): companion app + keyboard extension, shared App Group, built around the mockup. Then open it on the Mac by clicking in Xcode and build in the iPhone Simulator |
 | Mac access | Mac "mancinis-laptop-local" via the Claude desktop app. Folders: `~/Projects`, `~/Downloads`, Desktop, Documents, Movies, Pictures. Computer use: background mode preferred. **Terminal and Xcode are click-only (no typing)**, so generate the project files in the repo (e.g. a hand-written `.xcodeproj` or a generator run elsewhere) and copy them to `~/Projects/language-keyboard`. The Mac shell (`device_bash`) is a Linux VM: it can't run Xcode |
 | Waiting on Mancini | First Xcode launch (component install, Mac password) and signing in to Xcode with his Apple ID. Apple Developer Program enrolled (Individual) |
@@ -115,6 +125,17 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | `gemini_flash36` | gemini-3.6-flash | Thinking MINIMAL (speed test only) |
 - Slang glossary is a list inside the Worker for now (plan: move to Cloudflare KV, refresh monthly).
 
+### iOS app (`app/`)
+
+| Part | Files | Notes |
+|---|---|---|
+| Project spec | `project.yml` | XcodeGen. Targets: `LanguageKeyboard` (app), `Keyboard` (extension, `RequestsOpenAccess`), `SharedTests`. iOS 18+, iPhone only |
+| IDs | `com.mancinitan.LanguageKeyboard`, `.Keyboard`, App Group `group.com.mancinitan.LanguageKeyboard` | Register in the developer portal before the first signed build |
+| Shared | `Shared/` | `HangulComposer` (2-beolsik, jamo backspace), `Models` (languages, profiles, settings), `SettingsStore` (App Group), `ProxyClient` (`/check`, `/rephrase`, one reused connection), `TextDiff` (highlights changed parts) |
+| Keyboard | `Keyboard/` | `KeyboardViewController` hosts SwiftUI. `KeyboardModel`: typing, pause check (punctuation = now, else after `pauseSeconds`), cancels on typing, Apply/rephrase replace the text only if it's unchanged. `KeyboardView`: bar, result card, keys (44pt, mockup colours, full-width touch areas, delete repeats). `SettingsPanel`: mockup's "Check settings" |
+| Companion app | `App/` | Tabs: Set up (steps + try-it field), Profiles (per language, edit/add/delete, speaker gender, Chinese region/script, "What I mean"), Checks (on/off, pause, model, proxy URL + token, test check with timing) |
+| Tests | `Tests/` | Hangul composition and backspace, diff highlighting, settings decoding. Also run on Linux with the Swift toolchain for quick checks |
+
 ### Where things live (no secret values here)
 
 | Item | Location |
@@ -125,6 +146,8 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | `APP_TOKEN` | Same place, plus Mancini's password manager ("keyboard-proxy token"). **Rotate before daily use** (an earlier one appeared in a screenshot) |
 | Claude API credits | Claude Console org (Individual), linked via claude.ai (web only) › Settings › Billing › API credits |
 | Worker code | `proxy/worker.js` (v3) + `proxy/wrangler.jsonc` in the repo |
+| iOS code | `app/` in the repo. Edit `app/project.yml`, never the `.xcodeproj` (CI regenerates it) |
+| Proxy token on the phone | Pasted into the companion app (Checks tab), stored in the App Group. Not in the repo |
 | Blind test | v3 run complete: 36 sentences × 5 models, 0 errors. Judging page: [Keyboard blind test](https://claude.ai/artifact/4AKy3ivDKKEW1PvRASiYMH) (pick the best answer per sentence, then Reveal). Model time: haiku avg 1.10s (median 1.03s) · haiku_think 2.03s (1.80s) · sonnet 1.64s (1.49s) · gemini_lite 1.36s (0.79s, p90 2.7s) · gemini_flash 4.14s (3.61s). Waiting on Mancini's picks |
 | Auto-scored (prompt 3.2, 3 runs × 36) | **sonnet 32.0** (31 always right, 2 flaky) · haiku_think 30.3 · gemini_lite 30.0 (5 flaky) · haiku 28.0. Haiku now always misses 선생님께 드렸어, 오셨어, 안 했어서 (it caught some of these under prompt 3.1, so 3.2 may have hurt Haiku). Expected answers for #10 잤었어, #23 전화를 할게요, #35 再一次去 are debatable |
 
@@ -150,6 +173,12 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | D14 | Rephrase default: only when noticeably stiff (pending confirmation) | Avoids nagging | Always / off |
 | D15 | Code and this doc live in a GitHub repo with Cloudflare auto-deploy | He builds away from his Mac; any future chat or Claude Code session can read and update the doc and ship proxy changes | Pasting code into the dashboard; API token deploys |
 | D16 | Proxy guards against bad model output (no-change "fix" becomes "ok") | Haiku returned unchanged "fixes" 3 times in the first run | Trusting raw model output |
+| D17 | XcodeGen spec in the repo; CI generates the project and commits it back | Mac Terminal and Xcode are click-only and Mancini is away from the Mac; the committed project opens in Xcode with no commands | Hand-written `.xcodeproj` (fragile); generating on the Mac (no typing) |
+| D18 | GitHub Actions macOS runner for builds now, TestFlight upload later in the same workflow | Works from anywhere, logs readable by Claude; Xcode Cloud needs Xcode GUI setup on the Mac first | Xcode Cloud |
+| D19 | SwiftUI keyboard inside `UIInputViewController`; shared code compiled into each target | Fast to build to the mockup; no framework embedding to get wrong | Separate shared framework (later, if build times grow) |
+| D20 | Mockup's emoji key becomes the language toggle (shows the language it switches to) | Third-party keyboards can't open Apple's emoji keyboard; the system draws globe and mic below the keyboard on Face ID iPhones | Dead emoji key |
+| D21 | Proxy token in App Group storage for now | Personal use; simple | Shared Keychain (move there before going public) |
+| D22 | App default model Sonnet 5.5, changeable in the app | Matches the current leaning (most accurate in 3-run scoring) without a proxy change | Proxy default `haiku` |
 
 ---
 
@@ -162,7 +191,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | Claude API access | Working (Haiku confirmed live) |
 | Blind test | Haiku (thinking off) on 36 sentences: avg 1.18s model time (0.75–2.6s). About 23 good, 4 real misses, 5 over-corrections or no-change "fixes". Sonnet failed (400), needs re-run after v2. Add a third candidate: Haiku with thinking at low effort |
 | Measured speed | Haiku ~1.1–1.2s model time; ~2–3s total from curl on a Mac (cold connections, served from Cloudflare SEA/LAX). Expect ~1.4s per check in the keyboard with a reused connection |
-| iOS app | Not started. Mac ready (2026-11-11): Xcode installed from the App Store; ~67 GB free after cleanup. Apple Developer Program: enrolled 2026-11-11 (Individual). Claude can reach the Mac remotely: folders `~/Projects`, `~/Downloads`, Desktop, Documents, Movies, Pictures; computer use (Terminal and Xcode are click-only, so the Xcode project is generated in the repo and opened in Xcode by clicking). Still needs Mancini at the Mac once: Xcode first-launch component install (may ask for the Mac password) and signing in to Xcode with his Apple ID |
+| iOS app | **Skeleton done (2026-11-11)**: XcodeGen project, companion app, keyboard extension built to the mockup, 13 unit tests, CI green (Simulator + unsigned device builds). Not yet run in a Simulator or on the iPhone. Earlier: Mac ready (2026-11-11): Xcode installed from the App Store; ~67 GB free after cleanup. Apple Developer Program: enrolled 2026-11-11 (Individual). Claude can reach the Mac remotely: folders `~/Projects`, `~/Downloads`, Desktop, Documents, Movies, Pictures; computer use (Terminal and Xcode are click-only, so the Xcode project is generated in the repo and opened in Xcode by clicking). Still needs Mancini at the Mac once: Xcode first-launch component install (may ask for the Mac password) and signing in to Xcode with his Apple ID |
 
 ---
 
@@ -171,7 +200,7 @@ iPhone keyboard extension ──HTTPS──▶ Cloudflare Worker "keyboard-proxy
 | Milestone | Contents | Estimate | Status |
 |---|---|---|---|
 | M0 Proxy + model choice | Worker, blind test (5 models), pick a model per language, prompt tuning | days | In progress |
-| M0.5 Dev setup | GitHub repo + Worker auto-deploy (done), Apple Developer account, Xcode Cloud + TestFlight so builds can be installed away from the Mac | 1–2 days | In progress |
+| M0.5 Dev setup | GitHub repo + Worker auto-deploy (done), Apple Developer account (done), XcodeGen + GitHub Actions build (done), TestFlight upload so builds can be installed away from the Mac | 1–2 days | In progress |
 | M1 Usable daily | Keyboard shell (fork Hamster or own), Korean + Chinese layouts, in-keyboard toggle, RIME, Hangul, pause check, settings + profiles, language pack structure | ~4–5 weeks | Not started |
 | M2 Typing quality | Autocorrect on space, word completion, next-word, learning from typing, rephrase UI | ~2–3 weeks | Not started |
 | M3 Learning mode | Long-press dictionary panel, offline dictionaries + LLM note, study list | ~1–2 weeks | Not started |
@@ -206,7 +235,7 @@ Branch when a task has its own deliverable and only needs this doc as context, n
 | Chat | Branch when | Covers |
 |---|---|---|
 | **A. Proxy, prompts, model choice** (this chat) | Now, until the blind test is judged and the model is picked | Worker, prompts, slang glossary, blind tests |
-| **B. Dev setup** | Right after A | GitHub repo, Worker auto-deploy, Apple Developer, Xcode Cloud/TestFlight |
+| **B. Dev setup** | Right after A (done 2026-11-11 except TestFlight) | GitHub repo, Worker auto-deploy, Apple Developer, XcodeGen + Actions, TestFlight |
 | **C. Keyboard shell + Chinese (RIME)** | After B | Hamster fork or own shell, layouts, Liquid Glass styling, RIME |
 | **D. Korean input + predictions** | After C has a working shell | Hangul composition, word lists, autocorrect, learning |
 | **E. Settings, profiles, companion app** | Can run in parallel with D | Profile UI, App Group storage, settings panel |
@@ -236,6 +265,17 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Run-to-run variance is large: single runs can't separate models. Use `score.py` with 3+ runs for decisions | Process rule |
 | 2026-11-11 | gemini_lite once corrupted text (교수님 → 교수닐) and once changed meaning (我想再去了) | Watch: a correction that introduces errors is worse than none |
 | 2026-11-11 | Haiku missed: 안 했어서, 언니 from a male speaker, 왜냐하면 structure, 오에스티 → OST | Open: compare Sonnet and Haiku with thinking on |
+| 2026-11-11 | Chinese layout types pinyin letters only | Open: RIME in chat C |
+| 2026-11-11 | "What I mean" can't be typed inside the keyboard (the keys type into the host app) | Set in the companion app for now; route keys into the note field later (M1) |
+| 2026-11-11 | No predictions yet: idle bar shows the profile summary (e.g. "Friend · 반말") | M2 |
+| 2026-11-11 | Missing Apple-keyboard touches: key popups, click sound, haptics, double-space full stop, autocorrect on space, caps lock | M1/M2 |
+| 2026-11-11 | Settings changed inside the keyboard aren't saved without Full Access (App Group is read-only then) | By design; panel says so |
+| 2026-11-11 | Hangul composition replaces the syllable with delete + insert (no marked text). Some apps limit `documentContextBeforeInput`, which also limits what gets checked | Watch on device |
+| 2026-11-11 | Keyboard height grows when the correction card appears (`allowsSelfSizing`); not yet seen on screen | Check in Simulator |
+| 2026-11-11 | Xcode on the Mac is at its first-launch licence screen; Simulator not installed yet | Waiting on Mancini |
+| 2026-11-11 | Mac shell has no GitHub credentials, so the Mac copy is a snapshot | Re-copy after changes, or sign in to GitHub in Xcode (Settings › Accounts) and pull there |
+| 2026-11-11 | App icon is a placeholder (한 key with an orange underline) | Replace before TestFlight if wanted |
+| 2026-11-11 | `gh` CLI token in the cloud session is invalid; plain `api.github.com` calls work for reading runs | Opening PRs may need the GitHub web UI |
 
 ---
 
@@ -254,3 +294,4 @@ Also branch when a chat gets long enough that answers slow down or earlier detai
 | 2026-11-11 | Research: Siri AI Developer Preview (iOS 27.3) and Foundation Models; 3 integration proposals saved in docs/research |
 | 2026-11-11 | Mac setup started remotely: Xcode download from App Store; folders granted |
 | 2026-11-11 | Xcode installed; Apple Developer Program enrolled; ~12 GB freed on the Mac |
+| 2026-11-11 | Chat B: iOS app skeleton in `app/` (XcodeGen, companion app, keyboard extension to the mockup, Hangul composer, proxy client, tests) and `.github/workflows/ios.yml`. CI green on `macos-26`. Snapshot copied to `~/Projects/language-keyboard` on the Mac. Branch `ios-app` |
