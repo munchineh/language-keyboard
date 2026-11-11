@@ -36,6 +36,8 @@ schemes:
         Keyboard: all
     run:
       config: Debug
+      # Launch the companion app (its "Try it" box hosts the keyboard), no app picker.
+      executable: LanguageKeyboard
     test:
       config: Debug
       targets:
@@ -50,7 +52,7 @@ schemes:
         LanguageKeyboard: all
     run:
       config: Debug
-      # Ask which app to run the keyboard in (Messages, Notes, ...).
+      # For testing inside other apps: Xcode asks which one (Notes, Messages, ...).
       askForAppToLaunch: true
 
 targets:
