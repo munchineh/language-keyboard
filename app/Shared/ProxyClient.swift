@@ -56,7 +56,7 @@ enum ProxyError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .missingToken: return "Add the proxy token in the Language Keyboard app"
+        case .missingToken: return "Add the proxy token in the \(AppName.display) app"
         case .badURL: return "Proxy URL is not valid"
         case .http(let code, let message): return "Proxy error \(code)\(message.isEmpty ? "" : ": \(message)")"
         case .decoding: return "Unexpected reply from the proxy"

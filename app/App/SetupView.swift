@@ -20,8 +20,8 @@ struct SetupView: View {
             List {
                 Section {
                     statusRow(symbol: "keyboard", tint: Color(.systemGray),
-                              title: "Language Keyboard",
-                              detail: keyboardAdded ? nil : "Settings › Keyboards › Language Keyboard",
+                              title: AppName.display,
+                              detail: keyboardAdded ? nil : "Settings › Keyboards › \(AppName.display)",
                               done: keyboardAdded)
                     statusRow(symbol: "network", tint: .blue,
                               title: "Allow Full Access",
@@ -53,10 +53,10 @@ struct SetupView: View {
                 } header: {
                     Text("Try it")
                 } footer: {
-                    Text("Tap the box, hold 🌐 and pick Language Keyboard. Stop typing for a moment, or end a sentence with . ? or !, and the keyboard checks it.")
+                    Text("Tap the box, hold 🌐 and pick \(AppName.display). Stop typing for a moment, or end a sentence with . ? or !, and the keyboard checks it.")
                 }
             }
-            .navigationTitle("Language Keyboard")
+            .navigationTitle(AppName.display)
             .animation(.default, value: keyboardAdded)
             .animation(.default, value: fullAccess)
             .onAppear(perform: refresh)

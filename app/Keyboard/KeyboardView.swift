@@ -214,7 +214,7 @@ struct ResultCard: View {
                 model.openFullAccessSettings()
             }
         case .needsSetup:
-            FullAccessLink(theme: theme, text: "Connect checks in the Language Keyboard app") {
+            FullAccessLink(theme: theme, text: "Connect checks in the \(AppName.display) app") {
                 model.openCheckSetup()
             }
         default:
