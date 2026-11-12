@@ -2,7 +2,7 @@ import SwiftUI
 
 /// "Check settings", opened from the settings icon. Takes the place of the
 /// bar and keys at the same height for every language. Changes are a draft
-/// until Done.
+/// until Save.
 struct SettingsPanel: View {
     @ObservedObject var model: KeyboardModel
     let theme: KeyboardTheme
@@ -12,16 +12,43 @@ struct SettingsPanel: View {
     private var context: CheckContext { draft.context(for: language) }
 
     var body: some View {
-        // Scrolls only if the rows don't fit (e.g. with the Full Access line),
-        // so nothing is ever clipped at the top or bottom.
-        ScrollView(.vertical, showsIndicators: false) {
-            rows
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+        VStack(spacing: 0) {
+            // Language sits above everything else: it decides which settings
+            // appear below, so it's pinned and never moves between languages.
+            header
+            Rectangle().fill(theme.divider).frame(height: 0.5)
+            // The rows scroll only if they don't fit (e.g. with the Full
+            // Access line), so nothing is ever clipped.
+            ScrollView(.vertical, showsIndicators: false) {
+                rows
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+            }
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .scrollBounceBehavior(.basedOnSize)
         .pickerStyle(.segmented)
         .labelsHidden()
+    }
+
+    private var header: some View {
+        HStack(spacing: 10) {
+            Picker("Language", selection: model.draftBinding(\.language, default: model.language)) {
+                ForEach(KeyboardLanguage.allCases) { Text($0.name).tag($0) }
+            }
+            .controlSize(.large)
+            Button { model.saveSettings() } label: {
+                Text("Save")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 18)
+                    .frame(height: 32)
+                    .background(Capsule().fill(theme.accent))
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Saves these settings")
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 48)
     }
 
     private var rows: some View {
@@ -31,25 +58,6 @@ struct SettingsPanel: View {
                     model.openFullAccessSettings()
                 }
                 .frame(height: 22)
-            }
-
-            // Done sits on the first row so every setting fits in the keyboard's height.
-            row("Language") {
-                HStack(spacing: 10) {
-                    Picker("Language", selection: model.draftBinding(\.language, default: model.language)) {
-                        ForEach(KeyboardLanguage.allCases) { Text($0.name).tag($0) }
-                    }
-                    Button { model.saveSettings() } label: {
-                        Text("Done")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 16)
-                            .frame(height: 30)
-                            .background(Capsule().fill(theme.accent))
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityHint("Saves these settings")
-                }
             }
 
             if language == .korean {
