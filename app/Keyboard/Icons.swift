@@ -20,41 +20,32 @@ struct SlidersShape: Shape {
     }
 }
 
-/// Solid gear with six wide spokes and crisp edges (radius eases quickly
-/// between inner and outer, after Mancini's reference).
-struct GearShape: Shape {
-    var teeth = 6
-    var outer: CGFloat = 0.47
-    var inner: CGFloat = 0.365
+
+/// Settings icon: a rounded hexagon (pointy top) with the language cut out.
+struct HexagonShape: Shape {
+    /// Corner rounding as a share of the width.
+    var cornerRadius: CGFloat = 0.13
 
     func path(in rect: CGRect) -> Path {
-        let size = min(rect.width, rect.height)
         let c = CGPoint(x: rect.midX, y: rect.midY)
-        func ease(_ x: CGFloat, _ a: CGFloat, _ b: CGFloat) -> CGFloat {
-            if x <= a { return 0 }
-            if x >= b { return 1 }
-            let u = (x - a) / (b - a)
-            return u * u * (3 - 2 * u)
+        let r = min(rect.width, rect.height) / 2
+        let corners = (0..<6).map { i -> CGPoint in
+            let a = CGFloat(i) * .pi / 3 - .pi / 2
+            return CGPoint(x: c.x + r * cos(a), y: c.y + r * sin(a))
         }
+        let radius = cornerRadius * rect.width
         var path = Path()
-        let steps = 720
-        for k in 0...steps {
-            let t = CGFloat(k) / CGFloat(steps) * 2 * .pi
-            let phase = (t * CGFloat(teeth) / (2 * .pi)).truncatingRemainder(dividingBy: 1)
-            let f = min(ease(phase, 0.04, 0.08), 1 - ease(phase, 0.58, 0.62))
-            let r = size * (inner + (outer - inner) * f)
-            let a = t - .pi / 2 - 2 * .pi / CGFloat(teeth) * 0.33
-            let p = CGPoint(x: c.x + r * cos(a), y: c.y + r * sin(a))
-            if k == 0 { path.move(to: p) } else { path.addLine(to: p) }
+        // Start halfway along the last edge so every corner gets the same arc.
+        let last = corners[5], first = corners[0]
+        path.move(to: CGPoint(x: (last.x + first.x) / 2, y: (last.y + first.y) / 2))
+        for i in 0..<6 {
+            path.addArc(tangent1End: corners[i], tangent2End: corners[(i + 1) % 6], radius: radius)
         }
         path.closeSubpath()
         return path
     }
 }
 
-/// Settings icon: a solid gear with the language mark (한 / 中) cut out of
-/// its centre as negative space. It never changes colour; check status lives
-/// in the suggestion bar.
 struct SettingsGlyph: View {
     let badge: String
     let color: Color
@@ -64,9 +55,9 @@ struct SettingsGlyph: View {
         Canvas { ctx, canvas in
             let w = canvas.width
             ctx.drawLayer { layer in
-                layer.fill(GearShape().path(in: CGRect(origin: .zero, size: canvas)), with: .color(color))
+                layer.fill(HexagonShape().path(in: CGRect(origin: .zero, size: canvas)), with: .color(color))
                 layer.blendMode = .destinationOut
-                let mark = layer.resolve(Text(badge).font(.system(size: w * 0.41, weight: .bold)))
+                let mark = layer.resolve(Text(badge).font(.system(size: w * 0.44, weight: .bold)))
                 layer.draw(mark, at: CGPoint(x: w / 2, y: w / 2 + w * 0.005), anchor: .center)
             }
         }
@@ -95,7 +86,7 @@ struct ArrowButton: View {
     }
 }
 
-/// Orange line with a chevron that opens the app's Settings page.
+/// Orange line with a chevron that opens the app (or its Settings page).
 struct FullAccessLink: View {
     let theme: KeyboardTheme
     let text: String

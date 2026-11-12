@@ -59,15 +59,23 @@ enum KeyMetrics {
     static let verticalGap: CGFloat = 12
     static let rowHeight: CGFloat = keyHeight + verticalGap
     static let cornerRadius: CGFloat = 10
-    static let barHeight: CGFloat = 46
-    /// Space between the keyboard's edge and the result card, on every side.
-    static let cardMargin: CGFloat = 6
-    /// Top corner radius of the keyboard background (mockup: 30).
-    static let keyboardRadius: CGFloat = 30
+    static let barHeight: CGFloat = 40
+    /// Grey strip iOS 26/27 draws above third-party keyboards. The extension
+    /// can't draw into it or read its size (measured in the iOS 27 Simulator).
+    static let systemTopInset: CGFloat = 17
+    /// Space between the keyboard's edge and the result card on every side:
+    /// the same as the system's top strip, which the card can't go into.
+    static let cardMargin: CGFloat = systemTopInset
+    /// Top corner radius of the system keyboard background (measured: ~26pt).
+    static let keyboardRadius: CGFloat = 26
     /// Concentric with the keyboard's corners.
-    static var cardRadius: CGFloat { keyboardRadius - cardMargin }
+    static var cardRadius: CGFloat { max(keyboardRadius - cardMargin, 10) }
+    /// Space between the bar and the first key row. With the system's top
+    /// strip above the bar, this keeps the bar's icons centred between the
+    /// keyboard's top edge and the keys.
+    static let barToKeys: CGFloat = systemTopInset
     /// Bar plus four key rows. Settings and emoji use the same height.
-    static let bodyHeight: CGFloat = barHeight + 6 + rowHeight * 4 + 4
+    static let bodyHeight: CGFloat = barHeight + barToKeys + rowHeight * 4 + 4
 }
 
 enum KeyLayouts {

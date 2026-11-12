@@ -15,14 +15,13 @@ struct KeyboardRootView: View {
                 if model.editingField != nil {
                     FieldEditorBar(model: model, theme: theme)
                         .frame(height: KeyMetrics.barHeight)
-                        .padding(.top, 6)
                 } else {
                     if model.check.hasCard {
                         ResultCard(model: model, theme: theme)
                     }
+                    // No top padding: iOS already adds a strip above the keyboard.
                     SuggestionBar(model: model, theme: theme)
                         .frame(height: KeyMetrics.barHeight)
-                        .padding(.top, model.check.hasCard ? 0 : 6)
                 }
                 Group {
                     if model.page == .emoji {
@@ -31,7 +30,7 @@ struct KeyboardRootView: View {
                         KeyGrid(model: model, theme: theme)
                     }
                 }
-                .padding(.top, 6)
+                .padding(.top, KeyMetrics.barToKeys)
                 .padding(.bottom, 4)
             }
         }
@@ -149,9 +148,9 @@ struct ResultCard: View {
                             .strokeBorder(theme.keyHighlight.opacity(0.5), lineWidth: 0.5)
                     )
             )
+            // Sides match the system's top strip, so the margin is even all round.
             .padding(.horizontal, KeyMetrics.cardMargin)
-            .padding(.top, KeyMetrics.cardMargin)
-            .padding(.bottom, 2)
+            .padding(.bottom, 4)
     }
 
     @ViewBuilder private var content: some View {
@@ -213,6 +212,10 @@ struct ResultCard: View {
         case .needsFullAccess:
             FullAccessLink(theme: theme, text: "Turn on Full Access to check your writing") {
                 model.openFullAccessSettings()
+            }
+        case .needsSetup:
+            FullAccessLink(theme: theme, text: "Connect checks in the Language Keyboard app") {
+                model.openCheckSetup()
             }
         default:
             EmptyView()

@@ -169,6 +169,7 @@ private struct SnapshotScreen: View {
             .padding(.bottom, 10)
 
             KeyboardRootView(model: model)
+                .padding(.top, KeyMetrics.systemTopInset) // iOS's strip above third-party keyboards
                 .padding(.bottom, 46) // space for the system globe/mic row
                 .background(
                     UnevenRoundedRectangle(topLeadingRadius: KeyMetrics.keyboardRadius, bottomLeadingRadius: 46,

@@ -25,13 +25,21 @@ struct LanguageKeyboardApp: App {
         }
     }
 
-    /// From the keyboard's "Turn on Full Access" link: show Set up, then go
-    /// straight to this app's page in Settings (Keyboards › Allow Full Access).
+    /// Links from the keyboard: "checks" opens the Checks tab (token);
+    /// "full-access" goes straight to this app's page in Settings
+    /// (Keyboards › Allow Full Access).
     private func handle(_ url: URL) {
         guard url.scheme == "languagekeyboard" else { return }
-        tab = .setup
-        if url.host == "full-access", let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(settingsURL)
+        switch url.host {
+        case "checks":
+            tab = .checks
+        case "full-access":
+            tab = .setup
+            if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(settingsURL)
+            }
+        default:
+            tab = .setup
         }
     }
 }

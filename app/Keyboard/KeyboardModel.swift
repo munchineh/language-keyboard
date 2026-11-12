@@ -15,6 +15,8 @@ enum CheckState: Equatable {
     case message(String)
     /// Checks need Full Access; the card links to the app, which opens Settings.
     case needsFullAccess
+    /// The app has no token, or the proxy rejected it: link to the Checks tab.
+    case needsSetup
 
     /// Something the card shows.
     var hasCard: Bool {
@@ -103,6 +105,19 @@ final class KeyboardModel: ObservableObject {
     func openFullAccessSettings() {
         guard let url = URL(string: "languagekeyboard://full-access") else { return }
         controller?.openContainingApp(url)
+    }
+
+    /// Opens the app on its Checks tab, where the token is entered.
+    func openCheckSetup() {
+        guard let url = URL(string: "languagekeyboard://checks") else { return }
+        controller?.openContainingApp(url)
+    }
+
+    static func state(for error: Error) -> CheckState {
+        switch error as? ProxyError {
+        case .missingToken, .http(401, _): return .needsSetup
+        default: return .message(error.localizedDescription)
+        }
     }
 
     var hasFullAccess: Bool { fullAccessOverride ?? controller?.hasFullAccess ?? false }
@@ -425,7 +440,7 @@ final class KeyboardModel: ObservableObject {
         } catch {
             guard !Task.isCancelled, !(error is CancellationError) else { return }
             if (error as? URLError)?.code == .cancelled { return }
-            check = .message(error.localizedDescription)
+            check = Self.state(for: error)
         }
     }
 
@@ -471,7 +486,7 @@ final class KeyboardModel: ObservableObject {
                 }
             } catch {
                 guard !Task.isCancelled else { return }
-                self.check = .message(error.localizedDescription)
+                self.check = Self.state(for: error)
             }
         }
     }
