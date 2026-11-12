@@ -9,10 +9,30 @@ struct ConnectionView: View {
         NavigationStack {
             Form {
                 Section {
-                    Toggle("Check as I type", isOn: $settings.value.checksEnabled)
-                    VStack(alignment: .leading) {
-                        Text("Pause before checking: \(settings.value.pauseSeconds, specifier: "%.1f")s")
-                        Slider(value: $settings.value.pauseSeconds, in: 0.6...2.0, step: 0.1)
+                    Toggle(isOn: $settings.value.checksEnabled.animation()) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Check while typing")
+                            Text(settings.value.checksEnabled
+                                 ? "Checks your sentence when you stop typing."
+                                 : "Off: nothing is checked and nothing leaves your phone. Word suggestions still work.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    if settings.value.checksEnabled {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text("Pause before checking")
+                                Spacer()
+                                Text("\(settings.value.pauseSeconds, specifier: "%.1f")s")
+                                    .foregroundStyle(.secondary)
+                                    .monospacedDigit()
+                            }
+                            Text("How long you stop typing before a check starts. Shorter feels quicker; longer interrupts you less mid-sentence.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                            Slider(value: $settings.value.pauseSeconds, in: 0.6...2.0, step: 0.1)
+                        }
                     }
                     Picker("Model", selection: $settings.value.model) {
                         ForEach(CheckModel.allCases) { Text($0.label).tag($0) }
@@ -20,7 +40,9 @@ struct ConnectionView: View {
                 } header: {
                     Text("Checks")
                 } footer: {
-                    Text("A full stop, question mark or exclamation mark checks straight away.")
+                    if settings.value.checksEnabled {
+                        Text("Ending a sentence with . ? or ! checks straight away.")
+                    }
                 }
 
                 Section {
